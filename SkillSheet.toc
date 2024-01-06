@@ -1,0 +1,8 @@
+## Interface: 100200
+## Version: 0.1.0
+## Title: Skill Sheet
+## Notes: Character Sheer for roleplayers
+## Author: Onirim
+
+Localization.lua
+Core.lua
