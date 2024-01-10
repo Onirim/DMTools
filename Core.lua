@@ -28,7 +28,16 @@ function rollDice(dice)
     end
 end
 
-
+-----------------------
+-- Variables mémoire --
+-----------------------
+local lastSkillName = ""
+local lastDiceRoll = ""
+local lastDiceValue = ""
+local lastCostRoll = ""
+local lastCostValue = ""
+local lastHealthValue = ""
+local lastRessourceValue = ""
 
 ----------------------------
 --   MESSAGE D'ACCUEIL    --
@@ -87,7 +96,7 @@ f:SetScript("OnEvent", function(self, event)
 	local gmHeaders = SkillFrame:CreateFontString(nil, "OVERLAY")
 	gmHeaders:SetFontObject("GameFontNormal")
 	gmHeaders:SetPoint("TOPLEFT", 10, - 120)
-	gmHeaders:SetText("Personnage               Compétence                Jet (Dés)         Coût (Dés)")
+	gmHeaders:SetText("Personnage                 Compétence                  Jet (Dés)           Coût (Dés)           Santé          Ressource")
 	gmHeaders:Hide()
 	-- Création de la ligne de séparation
 	local line = SkillFrame:CreateTexture(nil, "BACKGROUND")
@@ -140,39 +149,55 @@ f:SetScript("OnEvent", function(self, event)
 	-- Création de la table d'affichage des noms
 	local displayTableName = SkillFrameGM:CreateFontString(nil, "OVERLAY")
 	displayTableName:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
-	displayTableName:SetPoint("TOP", SkillFrameGM, "BOTTOM", -185, 455)
+	displayTableName:SetPoint("TOP", SkillFrameGM, "BOTTOM", -290, 455)
 	displayTableName:SetJustifyH("LEFT")
 	displayTableName:SetJustifyV("TOP")
 	displayTableName:SetText("")
 	-- Création de la table d'affichage des compétences
 	local displayTableSkillName = SkillFrameGM:CreateFontString(nil, "OVERLAY")
 	displayTableSkillName:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
-	displayTableSkillName:SetPoint("TOP", SkillFrameGM, "BOTTOM", -45, 455)
+	displayTableSkillName:SetPoint("TOP", SkillFrameGM, "BOTTOM", -140, 455)
 	displayTableSkillName:SetJustifyH("CENTER")
 	displayTableSkillName:SetJustifyV("TOP")
 	displayTableSkillName:SetText("")
 	-- Création de la table d'affichage du jet + valeur
 	local displayTableRoll = SkillFrameGM:CreateFontString(nil, "OVERLAY")
 	displayTableRoll:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
-	displayTableRoll:SetPoint("TOP", SkillFrameGM, "BOTTOM", 80, 455)
+	displayTableRoll:SetPoint("TOP", SkillFrameGM, "BOTTOM", -5, 455)
 	displayTableRoll:SetJustifyH("CENTER")
 	displayTableRoll:SetJustifyV("TOP")
 	displayTableRoll:SetText("")
-	-- Création de la table d'affichage des ressources
+	-- Création de la table d'affichage des jets de ressources
 	local displayTableRessource = SkillFrameGM:CreateFontString(nil, "OVERLAY")
 	displayTableRessource:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
-	displayTableRessource:SetPoint("TOP", SkillFrameGM, "BOTTOM", 170, 455)
+	displayTableRessource:SetPoint("TOP", SkillFrameGM, "BOTTOM", 95, 455)
 	displayTableRessource:SetJustifyH("CENTER")
 	displayTableRessource:SetJustifyV("TOP")
 	displayTableRessource:SetText("")
+	-- Création de la table d'affichage de la santé
+	local displayTableHealthValue = SkillFrameGM:CreateFontString(nil, "OVERLAY")
+	displayTableHealthValue:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
+	displayTableHealthValue:SetPoint("TOP", SkillFrameGM, "BOTTOM", 188, 455)
+	displayTableHealthValue:SetJustifyH("CENTER")
+	displayTableHealthValue:SetJustifyV("TOP")
+	displayTableHealthValue:SetText("")
+	-- Création de la table d'affichage de la ressource
+	local displayTableRessourceValue = SkillFrameGM:CreateFontString(nil, "OVERLAY")
+	displayTableRessourceValue:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
+	displayTableRessourceValue:SetPoint("TOP", SkillFrameGM, "BOTTOM", 275, 455)
+	displayTableRessourceValue:SetJustifyH("CENTER")
+	displayTableRessourceValue:SetJustifyV("TOP")
+	displayTableRessourceValue:SetText("")	
 
 
 	-- Mise à jour de la table
 	local function updateDisplayTable()
-	local displayName = ""
-	local displaySkillName = ""
-	local displayRoll = ""
-	local displayRessource = ""
+	local displayName = displayName or ""
+	local displaySkillName = displaySkillName or ""
+	local displayRoll = displayRoll or ""
+	local displayRessource = displayRessource or ""
+	local displayHealthValue = displayHealthValue or ""
+	local displayRessourceValue = displayRessourceValue or ""
 		for name, player in pairs(players) do
 			displayName = displayName .. "|cFF52BE80" .. name .. "\n\n"
 			local skillName = player.skillName or ""
@@ -193,12 +218,18 @@ f:SetScript("OnEvent", function(self, event)
 				costValue = ("(" .. costValue .. ")")
 				displayRessource = displayRessource .. costRoll .. " " .. costValue .. "\n\n"
 			end
+			local healthValue = player.healthValue or ""
+			--print(player.healthValue)
+			displayHealthValue = displayHealthValue .. healthValue .. "\n\n"
+			local ressourceValue = player.ressourceValue or ""
+			displayRessourceValue = displayRessourceValue .. ressourceValue .. "\n\n"
 		end
 		displayTableName:SetText(displayName)
 		displayTableSkillName:SetText(displaySkillName)
 		displayTableRoll:SetText(displayRoll)
 		displayTableRessource:SetText(displayRessource)
-	
+		displayTableHealthValue:SetText(displayHealthValue)
+		displayTableRessourceValue:SetText(displayRessourceValue)
 	end
 
 
@@ -250,7 +281,12 @@ f:SetScript("OnEvent", function(self, event)
 			if status then
 				playerName =  AddOn_TotalRP3.Player.GetCurrentUser():GetFirstName()
 			end
-			C_ChatInfo.SendAddonMessage("SkillSheet", "ROLL@" .. playerName .. "@" .. MySkills[i].name .. "@" .. rollDice(MySkills[i].roll) .. "@" .. MySkills[i].roll .. "@" .. rollDice(MySkills[i].cost) .. "@" .. MySkills[i].cost, channel)
+			lastSkillName = MySkills[i].name
+			lastDiceRoll = rollDice(MySkills[i].roll)
+			lastDiceValue = MySkills[i].roll
+			lastCostRoll = rollDice(MySkills[i].cost)
+			lastCostValue = MySkills[i].cost
+			C_ChatInfo.SendAddonMessage("SkillSheet", "ROLL@" .. playerName .. "@" .. MySkills[i].name .. "@" .. lastDiceRoll .. "@" .. MySkills[i].roll .. "@" .. lastCostRoll .. "@" .. MySkills[i].cost .. "@" .. healthValue .. "@" .. ressourceValue, channel)
 			--print("ROLL@" .. playerName .. "@" .. MySkills[i].name .. "@" .. rollDice(MySkills[i].roll) .. "@(" .. MySkills[i].roll .. ")@" .. rollDice(MySkills[i].cost) .. "@(" .. MySkills[i].cost .. ")")
 		end)
 		if MySkills[i].name == "" then
@@ -382,10 +418,12 @@ f:SetScript("OnEvent", function(self, event)
 		SkillFrameGM:Hide()
 		tableHeaders:Show()
 		gmHeaders:Hide()
+		SkillFrame:SetSize(460, 600) -- Largeur, Hauteur
+		line:SetWidth(SkillFrame:GetWidth())
 	end)
 	-- Bouton page 2
 	local SkillButtonPage2 = CreateFrame("Button", nil, SkillFrame, "GameMenuButtonTemplate")
-	SkillButtonPage2:SetPoint("TOPLEFT", 150, -30)
+	SkillButtonPage2:SetPoint("TOPLEFT", 145, -30)
 	SkillButtonPage2:SetSize(80, 25)
 	SkillButtonPage2:SetText("Page 2")
 	SkillButtonPage2:SetScript("OnClick", function()
@@ -395,11 +433,13 @@ f:SetScript("OnEvent", function(self, event)
 		SkillFrameGM:Hide()
 		tableHeaders:Show()
 		gmHeaders:Hide()
+		SkillFrame:SetSize(460, 600) -- Largeur, Hauteur
+		line:SetWidth(SkillFrame:GetWidth())
 
 	end)
 	-- Bouton page 3
 	local SkillButtonPage3 = CreateFrame("Button", nil, SkillFrame, "GameMenuButtonTemplate")
-	SkillButtonPage3:SetPoint("TOPLEFT", 240, -30)
+	SkillButtonPage3:SetPoint("TOPLEFT", 230, -30)
 	SkillButtonPage3:SetSize(80, 25)
 	SkillButtonPage3:SetText("Page 3")
 	SkillButtonPage3:SetScript("OnClick", function()
@@ -409,6 +449,8 @@ f:SetScript("OnEvent", function(self, event)
 		SkillFrameGM:Hide()
 		tableHeaders:Show()
 		gmHeaders:Hide()
+		SkillFrame:SetSize(460, 600) -- Largeur, Hauteur
+		line:SetWidth(SkillFrame:GetWidth())
 
 	end)
 	-- Bouton Interface MJ
@@ -423,13 +465,15 @@ f:SetScript("OnEvent", function(self, event)
 		SkillFrameGM:Show()
 		tableHeaders:Hide()
 		gmHeaders:Show()
+		SkillFrame:SetSize(660, 600) -- Largeur, Hauteur
+		line:SetWidth(SkillFrame:GetWidth())
 
 	end)
 	
 	-- Cadre des points de vie
 	local health = CreateFrame("Frame", nil, SkillFrame)
 	health:SetSize(50, 50)
-	health:SetPoint("TOPLEFT", SkillFrame, "TOP", -220, -60)
+	health:SetPoint("TOPLEFT", SkillFrame, "TOPLEFT", 10, -60)
 	-- Ajout de l'icône en fond
 	local background = health:CreateTexture(nil, "BACKGROUND")
 	background:SetAllPoints()
@@ -447,7 +491,7 @@ f:SetScript("OnEvent", function(self, event)
 	bg:SetAllPoints()  -- Fait en sorte que la texture remplisse toute la frame
 	bg:SetColorTexture(0, 0, 0, 0.5)  -- Définit la texture comme transparente
 	local healthValueText = CreateFrame("EditBox", nil, healthFrame, "InputBoxTemplate")
-	healthValueText:SetMultiLine(true)
+	healthValueText:SetMultiLine(false)
 	healthValueText.Left:Hide()
 	healthValueText.Middle:Hide()
 	healthValueText.Right:Hide()
@@ -459,12 +503,19 @@ f:SetScript("OnEvent", function(self, event)
 	healthValueText:SetFont("Fonts\\FRIZQT__.TTF", 22, "OUTLINE")
 	healthValueText:SetScript("OnEditFocusLost", function(self)
 		healthValue = healthValueText:GetText()
+		local status, result = pcall(function() return
+			AddOn_TotalRP3.Player.GetCurrentUser():GetFirstName() end)
+			if status then
+				playerName =  AddOn_TotalRP3.Player.GetCurrentUser():GetFirstName()
+			end
+		C_ChatInfo.SendAddonMessage("SkillSheet", "SYNC@" .. playerName .. "@" .. lastSkillName .. "@" .. lastDiceRoll .. "@" .. lastDiceValue .. "@" .. lastCostRoll .. "@" .. lastCostValue .. "@" .. healthValue .. "@" .. ressourceValue, channel)
+		--print("SkillSheet", "SYNC@" .. playerName .. "@" .. lastSkillName .. "@" .. lastDiceRoll .. "@" .. lastDiceValue .. "@" .. lastCostRoll .. "@" .. lastCostValue .. "@" .. healthValue .. "@" .. ressourceValue, channel)
 	end)
 
 	-- Cadre des points de ressource
 	local ressource = CreateFrame("Frame", nil, SkillFrame)
 	ressource:SetSize(50, 50)
-	ressource:SetPoint("TOPLEFT", SkillFrame, "TOP", -50, -60)
+	ressource:SetPoint("TOPLEFT", SkillFrame, "TOPLEFT", 170, -60)
 	-- Ajout de l'icône en fond
 	local background = ressource:CreateTexture(nil, "BACKGROUND")
 	background:SetAllPoints()
@@ -482,7 +533,7 @@ f:SetScript("OnEvent", function(self, event)
 	bg:SetAllPoints()  -- Fait en sorte que la texture remplisse toute la frame
 	bg:SetColorTexture(0, 0, 0, 0.5)  -- Définit la texture comme transparente
 	local ressourceValueText = CreateFrame("EditBox", nil, ressourceFrame, "InputBoxTemplate")
-	ressourceValueText:SetMultiLine(true)
+	ressourceValueText:SetMultiLine(false)
 	ressourceValueText.Left:Hide()
 	ressourceValueText.Middle:Hide()
 	ressourceValueText.Right:Hide()
@@ -494,19 +545,32 @@ f:SetScript("OnEvent", function(self, event)
 	ressourceValueText:SetFont("Fonts\\FRIZQT__.TTF", 22, "OUTLINE")
 	ressourceValueText:SetScript("OnEditFocusLost", function(self)
 		ressourceValue = ressourceValueText:GetText()
+		local status, result = pcall(function() return
+			AddOn_TotalRP3.Player.GetCurrentUser():GetFirstName() end)
+			if status then
+				playerName =  AddOn_TotalRP3.Player.GetCurrentUser():GetFirstName()
+			end
+			C_ChatInfo.SendAddonMessage("SkillSheet", "SYNC@" .. playerName .. "@" .. lastSkillName .. "@" .. lastDiceRoll .. "@" .. lastDiceValue .. "@" .. lastCostRoll .. "@" .. lastCostValue .. "@" .. healthValue .. "@" .. ressourceValue, channel)
 	end)
 
 
 	-- Mise à jour de la table des participants lors de la réception d'un message HELLO
-	local function onSyncMessage(name, skillName, diceRoll, diceValue, costRoll, costValue)
+	local function onHelloMessage(name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue)
 		
 		if players[name] == nil then
-			players[name] = {skillName = skillName, diceRoll = diceRoll, diceValue = diceValue, costRoll = costRoll, costValue = costValue}
+			players[name] = {skillName = skillName, diceRoll = diceRoll, diceValue = diceValue, costRoll = costRoll, costValue = costValue, healthValue = healthValue, ressourceValue = ressourceValue}
 			--print("MaJ " .. name, skillName, diceRoll, diceValue, costRoll, costValue)
 		elseif skillName ~= nil and skillName ~= "" then
-			players[name] = {skillName = skillName, diceRoll = diceRoll, diceValue = diceValue, costRoll = costRoll, costValue = costValue}
+			players[name] = {skillName = skillName, diceRoll = diceRoll, diceValue = diceValue, costRoll = costRoll, costValue = costValue, healthValue = healthValue, ressourceValue = ressourceValue}
 			--print("MaJ " .. name, skillName, diceRoll, diceValue, costRoll, costValue)
 		end
+		updateDisplayTable()
+		
+	end
+
+	-- Mise à jour de la table des participants lors de la réception d'un message SYNC
+	local function onSyncMessage(name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue)
+		players[name] = {skillName = skillName, diceRoll = diceRoll, diceValue = diceValue, costRoll = costRoll, costValue = costValue, healthValue = healthValue, ressourceValue = ressourceValue}
 		updateDisplayTable()
 		
 	end
@@ -520,12 +584,12 @@ f:SetScript("OnEvent", function(self, event)
 			if status then
 				playerName =  AddOn_TotalRP3.Player.GetCurrentUser():GetFirstName()
 			end
-		C_ChatInfo.SendAddonMessage("SkillSheet", "HELLO@" .. playerName .. "@" .. "@" .. "@" .. "@" .. "@", channel)
-		--print("SkillSheet", "HELLO@" .. playerName .. "@" .. "@" .. "@" .. "@" .. "@", channel)
+		C_ChatInfo.SendAddonMessage("SkillSheet", "HELLO@" .. playerName .. "@" .. "@" .. "@" .. "@" .. "@" .. "@" .. healthValue .. "@" .. ressourceValue, channel)
+		--print("SkillSheet", "HELLO@" .. playerName .. "@" .. "@" .. "@" .. "@" .. "@" .. "@" .. healthValue .. "@" .. ressourceValue, channel)
 	end
 
 	-- Création du ticker
-	local ticker = C_Timer.NewTicker(10, sendInfo)
+	local ticker = C_Timer.NewTicker(5, sendInfo)
 	------------------------
 	--  COMMANDE SYSTEME  --
 	------------------------
@@ -548,15 +612,15 @@ f:SetScript("OnEvent", function(self, event)
 
 	eventFrame:SetScript("OnEvent", function(self, event, prefix, message, channel, sender)
 		if event == "CHAT_MSG_ADDON" and prefix == "SkillSheet" then
-			local playerName = UnitName("player") -- Obtient le nom du joueur
-			local senderName = strsplit("-", sender) -- Sépare le nom de l'expéditeur du nom du royaume
-			local action, name, skillName, diceRoll, diceValue, costRoll, costValue = strsplit("@", message)
+			local action, name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue = strsplit("@", message)
 			if action == "HELLO" then
-				onSyncMessage(name, skillName, diceRoll, diceValue, costRoll, costValue)
+				onHelloMessage(name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue)
 				--print("message reçu : " .. message)
 			elseif action == "ROLL" then
-				onSyncMessage(name, skillName, diceRoll, diceValue, costRoll, costValue)
+				onHelloMessage(name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue)
 				--print("message reçu : " .. message)
+			elseif action == "SYNC" then
+				onSyncMessage(name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue)
 			end
 		end
 	end)
