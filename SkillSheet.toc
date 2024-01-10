@@ -3,7 +3,7 @@
 ## Title: Skill Sheet
 ## Notes: Character Sheer for roleplayers
 ## Author: Onirim
-## SavedVariablesPerCharacter: MySkills
+## SavedVariablesPerCharacter: MySkills, healthValue, ressourceValue
 
 Localization.lua
 Core.lua
