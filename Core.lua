@@ -48,7 +48,7 @@ f:SetScript("OnEvent", function(self, event)
     -- Vérifiez si MySkills est nil, si c'est le cas, initialisez-le à une table vide
     if MySkills == nil then
         MySkills = {}
-		for i = 1, 40 do
+		for i = 1, 45 do
 		table.insert(MySkills, {id = i, name = "", roll = "", cost = "", description = ""})
 		end
 	end
@@ -78,11 +78,17 @@ f:SetScript("OnEvent", function(self, event)
 	-- SkillFrame:Hide() -- A réactiver en PROD
 
 
-	-- Création de la liste de compétence du volet principal
+	-- Création des entête de compétence du volet principal
 	local tableHeaders = SkillFrame:CreateFontString(nil, "OVERLAY")
 	tableHeaders:SetFontObject("GameFontNormal")
 	tableHeaders:SetPoint("TOPLEFT", 10, - 120)
-	tableHeaders:SetText("Compétence                               Valeur               Coût")
+	tableHeaders:SetText("Compétence                               Dés                    Coût")
+	-- Création de l'entête du tableau de suivi MJ
+	local gmHeaders = SkillFrame:CreateFontString(nil, "OVERLAY")
+	gmHeaders:SetFontObject("GameFontNormal")
+	gmHeaders:SetPoint("TOPLEFT", 10, - 120)
+	gmHeaders:SetText("Personnage               Compétence                Jet (Dés)         Coût (Dés)")
+	gmHeaders:Hide()
 	-- Création de la ligne de séparation
 	local line = SkillFrame:CreateTexture(nil, "BACKGROUND")
 	line:SetHeight(2)  -- Définit l'épaisseur de la ligne
@@ -98,6 +104,118 @@ f:SetScript("OnEvent", function(self, event)
 	local bg = SkillFramePage1:CreateTexture(nil, "BACKGROUND")
 	bg:SetAllPoints()  -- Fait en sorte que la texture remplisse toute la frame
 	bg:SetColorTexture(0, 0, 0, 0)  -- Définit la texture comme transparente
+	-- Création de la page 2
+	local SkillFramePage2 = CreateFrame("Frame", nil, SkillFrame)
+	SkillFramePage2:SetSize(460, 600)
+	SkillFramePage2:SetPoint("CENTER", 0, 0)  -- Positionne la frame au centre de l'écran
+	-- Création de la texture de fond
+	local bg = SkillFramePage2:CreateTexture(nil, "BACKGROUND")
+	bg:SetAllPoints()  -- Fait en sorte que la texture remplisse toute la frame
+	bg:SetColorTexture(0, 0, 0, 0)  -- Définit la texture comme transparente
+	SkillFramePage2:Hide()
+	-- Création de la page 3
+	local SkillFramePage3 = CreateFrame("Frame", nil, SkillFrame)
+	SkillFramePage3:SetSize(460, 600)
+	SkillFramePage3:SetPoint("CENTER", 0, 0)  -- Positionne la frame au centre de l'écran
+	-- Création de la texture de fond
+	local bg = SkillFramePage3:CreateTexture(nil, "BACKGROUND")
+	bg:SetAllPoints()  -- Fait en sorte que la texture remplisse toute la frame
+	bg:SetColorTexture(0, 0, 0, 0)  -- Définit la texture comme transparente
+	SkillFramePage3:Hide()
+	-- Création de la page MJ
+	local SkillFrameGM = CreateFrame("Frame", nil, SkillFrame)
+	SkillFrameGM:SetSize(460, 600)
+	SkillFrameGM:SetPoint("CENTER", 0, 0)  -- Positionne la frame au centre de l'écran
+	-- Création de la texture de fond
+	local bg = SkillFrameGM:CreateTexture(nil, "BACKGROUND")
+	bg:SetAllPoints()  -- Fait en sorte que la texture remplisse toute la frame
+	bg:SetColorTexture(0, 0, 0, 0)  -- Définit la texture comme transparente
+	SkillFrameGM:Hide()
+	
+	----------------------
+	-- TABLEAU SUIVI GM --
+	----------------------
+	local players = {}
+
+	-- Création de la table d'affichage des noms
+	local displayTableName = SkillFrameGM:CreateFontString(nil, "OVERLAY")
+	displayTableName:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
+	displayTableName:SetPoint("TOP", SkillFrameGM, "BOTTOM", -185, 455)
+	displayTableName:SetJustifyH("LEFT")
+	displayTableName:SetJustifyV("TOP")
+	displayTableName:SetText("")
+	-- Création de la table d'affichage des compétences
+	local displayTableSkillName = SkillFrameGM:CreateFontString(nil, "OVERLAY")
+	displayTableSkillName:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
+	displayTableSkillName:SetPoint("TOP", SkillFrameGM, "BOTTOM", -45, 455)
+	displayTableSkillName:SetJustifyH("CENTER")
+	displayTableSkillName:SetJustifyV("TOP")
+	displayTableSkillName:SetText("")
+	-- Création de la table d'affichage du jet + valeur
+	local displayTableRoll = SkillFrameGM:CreateFontString(nil, "OVERLAY")
+	displayTableRoll:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
+	displayTableRoll:SetPoint("TOP", SkillFrameGM, "BOTTOM", 80, 455)
+	displayTableRoll:SetJustifyH("CENTER")
+	displayTableRoll:SetJustifyV("TOP")
+	displayTableRoll:SetText("")
+	-- Création de la table d'affichage des ressources
+	local displayTableRessource = SkillFrameGM:CreateFontString(nil, "OVERLAY")
+	displayTableRessource:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
+	displayTableRessource:SetPoint("TOP", SkillFrameGM, "BOTTOM", 170, 455)
+	displayTableRessource:SetJustifyH("CENTER")
+	displayTableRessource:SetJustifyV("TOP")
+	displayTableRessource:SetText("")
+
+
+	-- Mise à jour de la table
+	local function updateDisplayTable()
+	local displayName = ""
+	local displaySkillName = ""
+	local displayRoll = ""
+	local displayRessource = ""
+		for name, player in pairs(players) do
+			displayName = displayName .. "|cFF52BE80" .. name .. "\n\n"
+			local skillName = player.skillName or ""
+			displaySkillName = displaySkillName .. skillName .. "\n\n"
+			local diceRoll = player.diceRoll or ""
+			local diceValue = player.diceValue or ""
+			if diceRoll == diceValue then
+				displayRoll = displayRoll .. diceRoll .. "\n\n"
+			else
+				diceValue = ("(" .. diceValue .. ")")
+				displayRoll = displayRoll .. diceRoll .. " " .. diceValue .. "\n\n"
+			end
+			local costRoll = player.costRoll or ""
+			local costValue = player.costValue or ""
+			if costRoll == costValue then
+				displayRessource = displayRessource .. costRoll .. "\n\n"
+			else
+				costValue = ("(" .. costValue .. ")")
+				displayRessource = displayRessource .. costRoll .. " " .. costValue .. "\n\n"
+			end
+		end
+		displayTableName:SetText(displayName)
+		displayTableSkillName:SetText(displaySkillName)
+		displayTableRoll:SetText(displayRoll)
+		displayTableRessource:SetText(displayRessource)
+	
+	end
+
+
+--[[ 	-- Mise à jour de la table d'affichage
+	local function updateDisplayTable()
+    local displayText = ""
+    for name, player in pairs(players) do
+        local skillName = player.skillName or ""
+        local diceRoll = player.diceRoll or ""
+        local diceValue = player.diceValue or ""
+        local costRoll = player.costRoll or ""
+        local costValue = player.costValue or ""
+        displayText = displayText .. "|cFF52BE80" .. name .. "|r " .. skillName .. "" .. diceRoll .. "" .. diceValue .. "" .. costRoll .. "" .. costValue .. "\n"
+		end
+		displayTable:SetText(displayText)
+	end ]]
+
 
 	for i = 1, 15 do
 	
@@ -127,9 +245,15 @@ f:SetScript("OnEvent", function(self, event)
 		rollButton:SetText("Roll")
 		rollButton:SetScript("OnClick", function()
 			PlaySound(36627)
-			print(playerName .. "§" .. MySkills[i].name .. "§" .. rollDice(MySkills[i].roll) .. "§" .. rollDice(MySkills[i].cost))
+			local status, result = pcall(function() return
+			AddOn_TotalRP3.Player.GetCurrentUser():GetFirstName() end)
+			if status then
+				playerName =  AddOn_TotalRP3.Player.GetCurrentUser():GetFirstName()
+			end
+			C_ChatInfo.SendAddonMessage("SkillSheet", "ROLL@" .. playerName .. "@" .. MySkills[i].name .. "@" .. rollDice(MySkills[i].roll) .. "@" .. MySkills[i].roll .. "@" .. rollDice(MySkills[i].cost) .. "@" .. MySkills[i].cost, channel)
+			--print("ROLL@" .. playerName .. "@" .. MySkills[i].name .. "@" .. rollDice(MySkills[i].roll) .. "@(" .. MySkills[i].roll .. ")@" .. rollDice(MySkills[i].cost) .. "@(" .. MySkills[i].cost .. ")")
 		end)
-		if MySkills[i].name == "" and MySkills[i].roll == "" and MySkills[i].cost == "" then
+		if MySkills[i].name == "" then
 			rollButton:Hide()
 		end
 		
@@ -234,7 +358,7 @@ f:SetScript("OnEvent", function(self, event)
 					skillName:SetText("|cFFFFFFFF" .. MySkills[i].name)
 					diceValue:SetText("|cFFFFFFFF" .. MySkills[i].roll)
 					costValue:SetText("|cFFFFFFFF" .. MySkills[i].cost)
-					if MySkills[i].name == "" and MySkills[i].roll == "" and MySkills[i].cost == ""  then
+					if MySkills[i].name == "" then
 						rollButton:Hide()
 						else 
 						rollButton:Show()
@@ -253,6 +377,53 @@ f:SetScript("OnEvent", function(self, event)
 	SkillButtonPage1:SetText("Page 1")
 	SkillButtonPage1:SetScript("OnClick", function()
 		SkillFramePage1:Show()
+		SkillFramePage2:Hide()
+		SkillFramePage3:Hide()
+		SkillFrameGM:Hide()
+		tableHeaders:Show()
+		gmHeaders:Hide()
+	end)
+	-- Bouton page 2
+	local SkillButtonPage2 = CreateFrame("Button", nil, SkillFrame, "GameMenuButtonTemplate")
+	SkillButtonPage2:SetPoint("TOPLEFT", 150, -30)
+	SkillButtonPage2:SetSize(80, 25)
+	SkillButtonPage2:SetText("Page 2")
+	SkillButtonPage2:SetScript("OnClick", function()
+		SkillFramePage1:Hide()
+		SkillFramePage2:Show()
+		SkillFramePage3:Hide()
+		SkillFrameGM:Hide()
+		tableHeaders:Show()
+		gmHeaders:Hide()
+
+	end)
+	-- Bouton page 3
+	local SkillButtonPage3 = CreateFrame("Button", nil, SkillFrame, "GameMenuButtonTemplate")
+	SkillButtonPage3:SetPoint("TOPLEFT", 240, -30)
+	SkillButtonPage3:SetSize(80, 25)
+	SkillButtonPage3:SetText("Page 3")
+	SkillButtonPage3:SetScript("OnClick", function()
+		SkillFramePage1:Hide()
+		SkillFramePage2:Hide()
+		SkillFramePage3:Show()
+		SkillFrameGM:Hide()
+		tableHeaders:Show()
+		gmHeaders:Hide()
+
+	end)
+	-- Bouton Interface MJ
+	local SkillButtonGM = CreateFrame("Button", nil, SkillFrame, "GameMenuButtonTemplate")
+	SkillButtonGM:SetPoint("TOPLEFT", 350, -30)
+	SkillButtonGM:SetSize(100, 25)
+	SkillButtonGM:SetText("Interface MJ")
+	SkillButtonGM:SetScript("OnClick", function()
+		SkillFramePage1:Hide()
+		SkillFramePage2:Hide()
+		SkillFramePage3:Hide()
+		SkillFrameGM:Show()
+		tableHeaders:Hide()
+		gmHeaders:Show()
+
 	end)
 	
 	-- Cadre des points de vie
@@ -285,7 +456,7 @@ f:SetScript("OnEvent", function(self, event)
 	healthValueText:SetPoint("CENTER", 0, 0)
 	healthValueText:SetAutoFocus(false)
 	healthValueText:SetText(healthValue)
-	healthValueText:SetFont("Fonts\\FRIZQT__.TTF", 25, "OUTLINE")
+	healthValueText:SetFont("Fonts\\FRIZQT__.TTF", 22, "OUTLINE")
 	healthValueText:SetScript("OnEditFocusLost", function(self)
 		healthValue = healthValueText:GetText()
 	end)
@@ -320,11 +491,41 @@ f:SetScript("OnEvent", function(self, event)
 	ressourceValueText:SetPoint("CENTER", 0, 0)
 	ressourceValueText:SetAutoFocus(false)
 	ressourceValueText:SetText(ressourceValue)
-	ressourceValueText:SetFont("Fonts\\FRIZQT__.TTF", 25, "OUTLINE")
+	ressourceValueText:SetFont("Fonts\\FRIZQT__.TTF", 22, "OUTLINE")
 	ressourceValueText:SetScript("OnEditFocusLost", function(self)
 		ressourceValue = ressourceValueText:GetText()
 	end)
 
+
+	-- Mise à jour de la table des participants lors de la réception d'un message HELLO
+	local function onSyncMessage(name, skillName, diceRoll, diceValue, costRoll, costValue)
+		
+		if players[name] == nil then
+			players[name] = {skillName = skillName, diceRoll = diceRoll, diceValue = diceValue, costRoll = costRoll, costValue = costValue}
+			--print("MaJ " .. name, skillName, diceRoll, diceValue, costRoll, costValue)
+		elseif skillName ~= nil and skillName ~= "" then
+			players[name] = {skillName = skillName, diceRoll = diceRoll, diceValue = diceValue, costRoll = costRoll, costValue = costValue}
+			--print("MaJ " .. name, skillName, diceRoll, diceValue, costRoll, costValue)
+		end
+		updateDisplayTable()
+		
+	end
+
+	-- Fonction de synchro pour peupler la liste des joueurs
+	local playerName = UnitName("player") -- Obtient le nom du joueur
+
+	local function sendInfo()
+		local status, result = pcall(function() return
+			AddOn_TotalRP3.Player.GetCurrentUser():GetFirstName() end)
+			if status then
+				playerName =  AddOn_TotalRP3.Player.GetCurrentUser():GetFirstName()
+			end
+		C_ChatInfo.SendAddonMessage("SkillSheet", "HELLO@" .. playerName .. "@" .. "@" .. "@" .. "@" .. "@", channel)
+		--print("SkillSheet", "HELLO@" .. playerName .. "@" .. "@" .. "@" .. "@" .. "@", channel)
+	end
+
+	-- Création du ticker
+	local ticker = C_Timer.NewTicker(10, sendInfo)
 	------------------------
 	--  COMMANDE SYSTEME  --
 	------------------------
@@ -334,5 +535,31 @@ f:SetScript("OnEvent", function(self, event)
 	SlashCmdList["SKILLSHEET"] = function(msg)
 		SkillFrame:Show()
 	end
+
+	------------------------------
+	-- GESTIONNAIRE D'EVENEMENT --
+	------------------------------
+
+	-- Création d'un cadre pour gérer les événements
+	local eventFrame = CreateFrame("Frame")
+
+	-- Enregistrement de l'événement "CHAT_MSG_ADDON"
+	eventFrame:RegisterEvent("CHAT_MSG_ADDON")
+
+	eventFrame:SetScript("OnEvent", function(self, event, prefix, message, channel, sender)
+		if event == "CHAT_MSG_ADDON" and prefix == "SkillSheet" then
+			local playerName = UnitName("player") -- Obtient le nom du joueur
+			local senderName = strsplit("-", sender) -- Sépare le nom de l'expéditeur du nom du royaume
+			local action, name, skillName, diceRoll, diceValue, costRoll, costValue = strsplit("@", message)
+			if action == "HELLO" then
+				onSyncMessage(name, skillName, diceRoll, diceValue, costRoll, costValue)
+				--print("message reçu : " .. message)
+			elseif action == "ROLL" then
+				onSyncMessage(name, skillName, diceRoll, diceValue, costRoll, costValue)
+				--print("message reçu : " .. message)
+			end
+		end
+	end)
 	
 end)
+
