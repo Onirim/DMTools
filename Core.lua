@@ -2,7 +2,6 @@
 local _, core = ...
 local L = core.Locales[GetLocale()] or core.Locales["enUS"]
 local version = GetAddOnMetadata("SkillSheet", "Version")
-
 -- Enregistrement du préfixe de l'addon
 C_ChatInfo.RegisterAddonMessagePrefix("SkillSheet")
 
@@ -61,10 +60,10 @@ f:SetScript("OnEvent", function(self, event)
 		table.insert(MySkills, {id = i, name = "", roll = "", cost = "", description = ""})
 		end
 		-- Définir les valeurs par défaut pour la première compétence
-        MySkills[1].name = "Première compétence"
-        MySkills[1].roll = "1d100"
-        MySkills[1].cost = "2"
-        MySkills[1].description = "Cet add-on est prévu pour fonctionner en groupe ou en raid, dans ce cas tous les joueurs doivent l'avoir installé. Hors d'un groupe, les lancers de dés sont affichée dans le canal emotes.\n\nVous pouvez utiliser des formules du type 1d100, 1d20 ou encore 3d6 pour vos dés et ressources, ainsi qu'un modificateur comme 1d20+5 ou 2d6-2. Les autres types de valeurs ne seront pas interprétées comme des jets de dés, mais sont acceptées. Essayez avec un dé à réussite \"automatique\" ou avec une ressource à \"aucune\" ou \"1/jour\" par exemple !\n\nBonnes aventures avec SkillSheet !\n"
+        MySkills[1].name = L["First Skill"]
+        MySkills[1].roll = L["First Roll"]
+        MySkills[1].cost = L["First Cost"]
+        MySkills[1].description = L["First Description"]
 	end
 	if healthValue == nil then
 		healthValue = ""
@@ -96,12 +95,12 @@ f:SetScript("OnEvent", function(self, event)
 	local tableHeaders = SkillFrame:CreateFontString(nil, "OVERLAY")
 	tableHeaders:SetFontObject("GameFontNormal")
 	tableHeaders:SetPoint("TOPLEFT", 10, - 120)
-	tableHeaders:SetText("Compétence                               Dés                   Ressource")
+	tableHeaders:SetText(L["Skill Table Header"])
 	-- Création de l'entête du tableau de suivi MJ
 	local gmHeaders = SkillFrame:CreateFontString(nil, "OVERLAY")
 	gmHeaders:SetFontObject("GameFontNormal")
 	gmHeaders:SetPoint("TOPLEFT", 10, - 120)
-	gmHeaders:SetText("Personnage                 Compétence                  Jet (Dés)           Coût (Dés)           Santé          Ressource")
+	gmHeaders:SetText(L["GM Table Header"])
 	gmHeaders:Hide()
 	-- Création de la ligne de séparation
 	local line = SkillFrame:CreateTexture(nil, "BACKGROUND")
@@ -224,7 +223,6 @@ f:SetScript("OnEvent", function(self, event)
 				displayRessource = displayRessource .. costRoll .. " " .. costValue .. "\n\n"
 			end
 			local healthValue = player.healthValue or ""
-			--print(player.healthValue)
 			displayHealthValue = displayHealthValue .. healthValue .. "\n\n"
 			local ressourceValue = player.ressourceValue or ""
 			displayRessourceValue = displayRessourceValue .. ressourceValue .. "\n\n"
@@ -266,7 +264,7 @@ f:SetScript("OnEvent", function(self, event)
 		local playerName = UnitName("player") -- Obtient le nom du joueur
 		rollButton:SetPoint("TOPLEFT", 365, -30 * i - 115)
 		rollButton:SetSize(60, 25)
-		rollButton:SetText("Roll")
+		rollButton:SetText(L["Roll"])
 		rollButton:SetScript("OnClick", function()
 			PlaySound(36627)
 			local status, result = pcall(function() return
@@ -279,6 +277,9 @@ f:SetScript("OnEvent", function(self, event)
 			lastDiceValue = MySkills[i].roll
 			lastCostRoll = rollDice(MySkills[i].cost)
 			lastCostValue = MySkills[i].cost
+			if IsInRaid() then
+				channel = "RAID"
+			end
 			C_ChatInfo.SendAddonMessage("SkillSheet", "ROLL@" .. playerName .. "@" .. MySkills[i].name .. "@" .. lastDiceRoll .. "@" .. MySkills[i].roll .. "@" .. lastCostRoll .. "@" .. MySkills[i].cost .. "@" .. healthValue .. "@" .. ressourceValue, channel)
 			-- partie gérant l'affichage de la notification en emote ou en communication interne
 			local displayRoll = "" -- a utiliser pour l'affichage
@@ -297,9 +298,12 @@ f:SetScript("OnEvent", function(self, event)
 				displayCostValue = ("(" .. MySkills[i].cost .. ")")
 				displayCost = displayCost .. lastCostRoll .. " " .. displayCostValue
 			end
-			local emoteChatMessage = ("utilise sa compétence " .. MySkills[i].name .. ", Jet " .. displayRoll .. ", coût " .. displayCost)
+			local emoteChatMessage = (L["use the skill"] .. MySkills[i].name .. L[", Roll "] .. displayRoll .. L[", cost "] .. displayCost)
 			if IsInGroup() or IsInRaid() then
-				C_ChatInfo.SendAddonMessage("SkillSheet", "EMOTE@" .. playerName .. " " .. emoteChatMessage)
+				if IsInRaid() then
+					channel = "RAID"
+				end
+				C_ChatInfo.SendAddonMessage("SkillSheet", "EMOTE@" .. playerName .. " " .. emoteChatMessage .. "@" .. "@" .. "@" .. "@" .. "@", channel)
 			else
 				SendChatMessage(emoteChatMessage, "EMOTE" )
 			end
@@ -319,7 +323,7 @@ f:SetScript("OnEvent", function(self, event)
 				SkillSheetEditIsOpened = true
 				-- Création de la fenêtre d'édition de compétence
 				local editFrame = CreateFrame("Frame", "editFrame", UIParent, "ButtonFrameTemplate")
-				editFrame:SetTitle("Editer la compétence")
+				editFrame:SetTitle(L["Skill Edit"])
 				editFrame:SetSize(400, 330) -- Largeur, Hauteur
 				editFrame:SetPoint("CENTER", 0, -0) -- Position sur l'écran
 				ButtonFrameTemplate_HidePortrait(editFrame) 
@@ -337,7 +341,7 @@ f:SetScript("OnEvent", function(self, event)
 				local editSkillName = editFrame:CreateFontString(nil, "OVERLAY")
 				editSkillName:SetFontObject("GameFontNormal")
 				editSkillName:SetPoint("TOPLEFT", 11, -30)
-				editSkillName:SetText("Nom de la compétence")
+				editSkillName:SetText(L["Skill Name"])
 				-- Zone de saisie pour le nom de la compétence
 				local skillNameBox = CreateFrame("EditBox", nil, editFrame, "InputBoxTemplate")
 				skillNameBox:SetSize(180, 20)
@@ -348,7 +352,7 @@ f:SetScript("OnEvent", function(self, event)
 				local editDiceRoll = editFrame:CreateFontString(nil, "OVERLAY")
 				editDiceRoll:SetFontObject("GameFontNormal")
 				editDiceRoll:SetPoint("TOPLEFT", 210, -30)
-				editDiceRoll:SetText("Valeur")
+				editDiceRoll:SetText(L["Dice"])
 				-- Zone de saisie pour la valeur du dé
 				local diceValueBox = CreateFrame("EditBox", nil, editFrame, "InputBoxTemplate")
 				diceValueBox:SetSize(80, 20)
@@ -359,7 +363,7 @@ f:SetScript("OnEvent", function(self, event)
 				local editTextCost = editFrame:CreateFontString(nil, "OVERLAY")
 				editTextCost:SetFontObject("GameFontNormal")
 				editTextCost:SetPoint("TOPLEFT", 308, -30)
-				editTextCost:SetText("Coût")
+				editTextCost:SetText(L["Cost"])
 				-- Zone de saisie pour le coût
 				local CostValueBox = CreateFrame("EditBox", nil, editFrame, "InputBoxTemplate")
 				CostValueBox:SetSize(80, 20)
@@ -370,7 +374,7 @@ f:SetScript("OnEvent", function(self, event)
 				local editSkillDescription = editFrame:CreateFontString(nil, "OVERLAY")
 				editSkillDescription:SetFontObject("GameFontNormal")
 				editSkillDescription:SetPoint("TOPLEFT", 10, -80)
-				editSkillDescription:SetText("Description de la compétence")
+				editSkillDescription:SetText(L["Skill Description"])
 				-- Création de la frame de fond pour la description de la compétence
 				local skillDescriptionBackground = CreateFrame("Frame", nil, editFrame)
 				skillDescriptionBackground:SetSize(380, 195)  -- Définit la taille de la frame
@@ -394,7 +398,7 @@ f:SetScript("OnEvent", function(self, event)
 				local saveButton = CreateFrame("Button", nil, editFrame, "GameMenuButtonTemplate")
 				saveButton:SetPoint("TOPLEFT", 10, -300)
 				saveButton:SetSize(180, 25)
-				saveButton:SetText("Enregistrer")
+				saveButton:SetText(L["Save"])
 				saveButton:SetScript("OnClick", function()
 					-- Enregistrement de la compétence ici
 					local skillNameText = skillNameBox:GetText()
@@ -463,6 +467,9 @@ for i = 16, 30 do
 		lastDiceValue = MySkills[i].roll
 		lastCostRoll = rollDice(MySkills[i].cost)
 		lastCostValue = MySkills[i].cost
+		if IsInRaid() then
+			channel = "RAID"
+		end
 		C_ChatInfo.SendAddonMessage("SkillSheet", "ROLL@" .. playerName .. "@" .. MySkills[i].name .. "@" .. lastDiceRoll .. "@" .. MySkills[i].roll .. "@" .. lastCostRoll .. "@" .. MySkills[i].cost .. "@" .. healthValue .. "@" .. ressourceValue, channel)
 		-- partie gérant l'affichage de la notification en emote ou en communication interne
 		local displayRoll = "" -- a utiliser pour l'affichage
@@ -481,9 +488,12 @@ for i = 16, 30 do
 			displayCostValue = ("(" .. MySkills[i].cost .. ")")
 			displayCost = displayCost .. lastCostRoll .. " " .. displayCostValue
 		end
-		local emoteChatMessage = ("utilise sa compétence " .. MySkills[i].name .. ", Jet " .. displayRoll .. ", coût " .. displayCost)
+		local emoteChatMessage = (L["use the skill"] .. MySkills[i].name .. L[", Roll "] .. displayRoll .. L[", cost "] .. displayCost)
 		if IsInGroup() or IsInRaid() then
-			C_ChatInfo.SendAddonMessage("SkillSheet", "EMOTE@" .. playerName .. " " .. emoteChatMessage)
+			if IsInRaid() then
+				channel = "RAID"
+			end
+			C_ChatInfo.SendAddonMessage("SkillSheet", "EMOTE@" .. playerName .. " " .. emoteChatMessage .. "@" .. "@" .. "@" .. "@" .. "@", channel)
 		else
 			SendChatMessage(emoteChatMessage, "EMOTE" )
 		end
@@ -503,7 +513,7 @@ for i = 16, 30 do
 			SkillSheetEditIsOpened = true
 			-- Création de la fenêtre d'édition de compétence
 			local editFrame = CreateFrame("Frame", "editFrame", UIParent, "ButtonFrameTemplate")
-			editFrame:SetTitle("Editer la compétence")
+			editFrame:SetTitle(L["Skill Edit"])
 			editFrame:SetSize(400, 330) -- Largeur, Hauteur
 			editFrame:SetPoint("CENTER", 0, -0) -- Position sur l'écran
 			ButtonFrameTemplate_HidePortrait(editFrame) 
@@ -521,7 +531,7 @@ for i = 16, 30 do
 			local editSkillName = editFrame:CreateFontString(nil, "OVERLAY")
 			editSkillName:SetFontObject("GameFontNormal")
 			editSkillName:SetPoint("TOPLEFT", 11, -30)
-			editSkillName:SetText("Nom de la compétence")
+			editSkillName:SetText(L["Skill Name"])
 			-- Zone de saisie pour le nom de la compétence
 			local skillNameBox = CreateFrame("EditBox", nil, editFrame, "InputBoxTemplate")
 			skillNameBox:SetSize(180, 20)
@@ -532,7 +542,7 @@ for i = 16, 30 do
 			local editDiceRoll = editFrame:CreateFontString(nil, "OVERLAY")
 			editDiceRoll:SetFontObject("GameFontNormal")
 			editDiceRoll:SetPoint("TOPLEFT", 210, -30)
-			editDiceRoll:SetText("Valeur")
+			editDiceRoll:SetText(L["Dice"])
 			-- Zone de saisie pour la valeur du dé
 			local diceValueBox = CreateFrame("EditBox", nil, editFrame, "InputBoxTemplate")
 			diceValueBox:SetSize(80, 20)
@@ -543,7 +553,7 @@ for i = 16, 30 do
 			local editTextCost = editFrame:CreateFontString(nil, "OVERLAY")
 			editTextCost:SetFontObject("GameFontNormal")
 			editTextCost:SetPoint("TOPLEFT", 308, -30)
-			editTextCost:SetText("Coût")
+			editTextCost:SetText(L["Cost"])
 			-- Zone de saisie pour le coût
 			local CostValueBox = CreateFrame("EditBox", nil, editFrame, "InputBoxTemplate")
 			CostValueBox:SetSize(80, 20)
@@ -554,7 +564,7 @@ for i = 16, 30 do
 			local editSkillDescription = editFrame:CreateFontString(nil, "OVERLAY")
 			editSkillDescription:SetFontObject("GameFontNormal")
 			editSkillDescription:SetPoint("TOPLEFT", 10, -80)
-			editSkillDescription:SetText("Description de la compétence")
+			editSkillDescription:SetText(L["Skill Description"])
 			-- Création de la frame de fond pour la description de la compétence
 			local skillDescriptionBackground = CreateFrame("Frame", nil, editFrame)
 			skillDescriptionBackground:SetSize(380, 195)  -- Définit la taille de la frame
@@ -578,7 +588,7 @@ for i = 16, 30 do
 			local saveButton = CreateFrame("Button", nil, editFrame, "GameMenuButtonTemplate")
 			saveButton:SetPoint("TOPLEFT", 10, -300)
 			saveButton:SetSize(180, 25)
-			saveButton:SetText("Enregistrer")
+			saveButton:SetText(L["Save"])
 			saveButton:SetScript("OnClick", function()
 				-- Enregistrement de la compétence ici
 				local skillNameText = skillNameBox:GetText()
@@ -647,6 +657,9 @@ for i = 31, 45 do
 		lastDiceValue = MySkills[i].roll
 		lastCostRoll = rollDice(MySkills[i].cost)
 		lastCostValue = MySkills[i].cost
+		if IsInRaid() then
+			channel = "RAID"
+		end
 		C_ChatInfo.SendAddonMessage("SkillSheet", "ROLL@" .. playerName .. "@" .. MySkills[i].name .. "@" .. lastDiceRoll .. "@" .. MySkills[i].roll .. "@" .. lastCostRoll .. "@" .. MySkills[i].cost .. "@" .. healthValue .. "@" .. ressourceValue, channel)
 		-- partie gérant l'affichage de la notification en emote ou en communication interne
 		local displayRoll = "" -- a utiliser pour l'affichage
@@ -665,9 +678,12 @@ for i = 31, 45 do
 			displayCostValue = ("(" .. MySkills[i].cost .. ")")
 			displayCost = displayCost .. lastCostRoll .. " " .. displayCostValue
 		end
-		local emoteChatMessage = ("utilise sa compétence " .. MySkills[i].name .. ", Jet " .. displayRoll .. ", coût " .. displayCost)
+		local emoteChatMessage = (L["use the skill"] .. MySkills[i].name .. L[", Roll "] .. displayRoll .. L[", cost "] .. displayCost)
 		if IsInGroup() or IsInRaid() then
-			C_ChatInfo.SendAddonMessage("SkillSheet", "EMOTE@" .. playerName .. " " .. emoteChatMessage)
+			if IsInRaid() then
+				channel = "RAID"
+			end
+			C_ChatInfo.SendAddonMessage("SkillSheet", "EMOTE@" .. playerName .. " " .. emoteChatMessage .. "@" .. "@" .. "@" .. "@" .. "@", channel)
 		else
 			SendChatMessage(emoteChatMessage, "EMOTE" )
 		end
@@ -687,7 +703,7 @@ for i = 31, 45 do
 			SkillSheetEditIsOpened = true
 			-- Création de la fenêtre d'édition de compétence
 			local editFrame = CreateFrame("Frame", "editFrame", UIParent, "ButtonFrameTemplate")
-			editFrame:SetTitle("Editer la compétence")
+			editFrame:SetTitle(L["Skill Edit"])
 			editFrame:SetSize(400, 330) -- Largeur, Hauteur
 			editFrame:SetPoint("CENTER", 0, -0) -- Position sur l'écran
 			ButtonFrameTemplate_HidePortrait(editFrame) 
@@ -705,7 +721,7 @@ for i = 31, 45 do
 			local editSkillName = editFrame:CreateFontString(nil, "OVERLAY")
 			editSkillName:SetFontObject("GameFontNormal")
 			editSkillName:SetPoint("TOPLEFT", 11, -30)
-			editSkillName:SetText("Nom de la compétence")
+			editSkillName:SetText(L["Skill Name"])
 			-- Zone de saisie pour le nom de la compétence
 			local skillNameBox = CreateFrame("EditBox", nil, editFrame, "InputBoxTemplate")
 			skillNameBox:SetSize(180, 20)
@@ -716,7 +732,7 @@ for i = 31, 45 do
 			local editDiceRoll = editFrame:CreateFontString(nil, "OVERLAY")
 			editDiceRoll:SetFontObject("GameFontNormal")
 			editDiceRoll:SetPoint("TOPLEFT", 210, -30)
-			editDiceRoll:SetText("Valeur")
+			editDiceRoll:SetText(L["Dice"])
 			-- Zone de saisie pour la valeur du dé
 			local diceValueBox = CreateFrame("EditBox", nil, editFrame, "InputBoxTemplate")
 			diceValueBox:SetSize(80, 20)
@@ -727,7 +743,7 @@ for i = 31, 45 do
 			local editTextCost = editFrame:CreateFontString(nil, "OVERLAY")
 			editTextCost:SetFontObject("GameFontNormal")
 			editTextCost:SetPoint("TOPLEFT", 308, -30)
-			editTextCost:SetText("Coût")
+			editTextCost:SetText(L["Cost"])
 			-- Zone de saisie pour le coût
 			local CostValueBox = CreateFrame("EditBox", nil, editFrame, "InputBoxTemplate")
 			CostValueBox:SetSize(80, 20)
@@ -738,7 +754,7 @@ for i = 31, 45 do
 			local editSkillDescription = editFrame:CreateFontString(nil, "OVERLAY")
 			editSkillDescription:SetFontObject("GameFontNormal")
 			editSkillDescription:SetPoint("TOPLEFT", 10, -80)
-			editSkillDescription:SetText("Description de la compétence")
+			editSkillDescription:SetText(L["Skill Description"])
 			-- Création de la frame de fond pour la description de la compétence
 			local skillDescriptionBackground = CreateFrame("Frame", nil, editFrame)
 			skillDescriptionBackground:SetSize(380, 195)  -- Définit la taille de la frame
@@ -762,7 +778,7 @@ for i = 31, 45 do
 			local saveButton = CreateFrame("Button", nil, editFrame, "GameMenuButtonTemplate")
 			saveButton:SetPoint("TOPLEFT", 10, -300)
 			saveButton:SetSize(180, 25)
-			saveButton:SetText("Enregistrer")
+			saveButton:SetText(L["Save"])
 			saveButton:SetScript("OnClick", function()
 				-- Enregistrement de la compétence ici
 				local skillNameText = skillNameBox:GetText()
@@ -840,7 +856,7 @@ end
 	local SkillButtonGM = CreateFrame("Button", nil, SkillFrame, "GameMenuButtonTemplate")
 	SkillButtonGM:SetPoint("TOPLEFT", 350, -30)
 	SkillButtonGM:SetSize(100, 25)
-	SkillButtonGM:SetText("Interface MJ")
+	SkillButtonGM:SetText(L["GM Screen"])
 	SkillButtonGM:SetScript("OnClick", function()
 		SkillFramePage1:Hide()
 		SkillFramePage2:Hide()
@@ -864,7 +880,7 @@ end
 	local healthText = health:CreateFontString(nil, "OVERLAY")
 	healthText:SetFont("Fonts\\FRIZQT__.TTF", 10, "OUTLINE")
 	healthText:SetPoint("CENTER", health, "CENTER", 0, -19)
-	healthText:SetText("Santé") 
+	healthText:SetText(L["Health"]) 
 	-- Création de la frame de fond la santé
 	local healthFrame = CreateFrame("Frame", nil, health)
 	healthFrame:SetSize(100, 50)  -- Définit la taille de la frame
@@ -892,10 +908,11 @@ end
 			if status then
 				playerName =  AddOn_TotalRP3.Player.GetCurrentUser():GetFirstName()
 			end
+		if IsInRaid() then
+			channel = "RAID"
+		end
 		C_ChatInfo.SendAddonMessage("SkillSheet", "SYNC@" .. playerName .. "@" .. lastSkillName .. "@" .. lastDiceRoll .. "@" .. lastDiceValue .. "@" .. lastCostRoll .. "@" .. lastCostValue .. "@" .. healthValue .. "@" .. ressourceValue, channel)
-		print(channel)
-		--print("SkillSheet", "SYNC@" .. playerName .. "@" .. lastSkillName .. "@" .. lastDiceRoll .. "@" .. lastDiceValue .. "@" .. lastCostRoll .. "@" .. lastCostValue .. "@" .. healthValue .. "@" .. ressourceValue, channel)
-	end)
+		end)
 
 	-- Cadre des points de ressource
 	local ressource = CreateFrame("Frame", nil, SkillFrame)
@@ -908,7 +925,7 @@ end
 	local ressourceText = health:CreateFontString(nil, "OVERLAY")
 	ressourceText:SetFont("Fonts\\FRIZQT__.TTF", 10, "OUTLINE")
 	ressourceText:SetPoint("CENTER", ressource, "CENTER", 0, -19)
-	ressourceText:SetText("Ressource") 
+	ressourceText:SetText(L["Resource"]) 
 	-- Création de la frame de fond des ressources
 	local ressourceFrame = CreateFrame("Frame", nil, ressource)
 	ressourceFrame:SetSize(100, 50)  -- Définit la taille de la frame
@@ -936,8 +953,10 @@ end
 			if status then
 				playerName =  AddOn_TotalRP3.Player.GetCurrentUser():GetFirstName()
 			end
+			if IsInRaid() then
+				channel = "RAID"
+			end
 			C_ChatInfo.SendAddonMessage("SkillSheet", "SYNC@" .. playerName .. "@" .. lastSkillName .. "@" .. lastDiceRoll .. "@" .. lastDiceValue .. "@" .. lastCostRoll .. "@" .. lastCostValue .. "@" .. healthValue .. "@" .. ressourceValue, channel)
-			print(channel)
 	end)
 
 
@@ -946,10 +965,8 @@ end
 		
 		if players[name] == nil then
 			players[name] = {skillName = skillName, diceRoll = diceRoll, diceValue = diceValue, costRoll = costRoll, costValue = costValue, healthValue = healthValue, ressourceValue = ressourceValue}
-			--print("MaJ " .. name, skillName, diceRoll, diceValue, costRoll, costValue)
 		elseif skillName ~= nil and skillName ~= "" then
 			players[name] = {skillName = skillName, diceRoll = diceRoll, diceValue = diceValue, costRoll = costRoll, costValue = costValue, healthValue = healthValue, ressourceValue = ressourceValue}
-			--print("MaJ " .. name, skillName, diceRoll, diceValue, costRoll, costValue)
 		end
 		updateDisplayTable()
 		
@@ -964,6 +981,9 @@ end
 
 	-- Fonction de synchro pour peupler la liste des joueurs
 	local playerName = UnitName("player") -- Obtient le nom du joueur
+	if IsInRaid() then
+		channel = "RAID"
+	end
 
 	local function sendInfo()
 		local status, result = pcall(function() return
@@ -972,8 +992,6 @@ end
 				playerName =  AddOn_TotalRP3.Player.GetCurrentUser():GetFirstName()
 			end
 		C_ChatInfo.SendAddonMessage("SkillSheet", "HELLO@" .. playerName .. "@" .. "@" .. "@" .. "@" .. "@" .. "@" .. healthValue .. "@" .. ressourceValue, channel)
-		--print("SkillSheet", "HELLO@" .. playerName .. "@" .. "@" .. "@" .. "@" .. "@" .. "@" .. healthValue .. "@" .. ressourceValue, channel)
-		--print(channel)
 	end
 
 	-- Création du ticker
@@ -1003,10 +1021,8 @@ end
 			local action, name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue = strsplit("@", message)
 			if action == "HELLO" then
 				onHelloMessage(name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue)
-				--print("message reçu : " .. message)
 			elseif action == "ROLL" then
 				onHelloMessage(name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue)
-				--print("message reçu : " .. message)
 			elseif action == "SYNC" then
 				onSyncMessage(name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue)
 			elseif action == "EMOTE" then
