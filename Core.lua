@@ -60,6 +60,11 @@ f:SetScript("OnEvent", function(self, event)
 		for i = 1, 45 do
 		table.insert(MySkills, {id = i, name = "", roll = "", cost = "", description = ""})
 		end
+		-- Définir les valeurs par défaut pour la première compétence
+        MySkills[1].name = "Première compétence"
+        MySkills[1].roll = "1d100"
+        MySkills[1].cost = "2"
+        MySkills[1].description = "Description par défaut"
 	end
 	if healthValue == nil then
 		healthValue = ""
@@ -84,7 +89,7 @@ f:SetScript("OnEvent", function(self, event)
 	SkillFrame:SetScript("OnDragStop", SkillFrame.StopMovingOrSizing)
 	SkillFrame:SetFrameStrata("BACKGROUND")
 	SkillFrame.Inset:Hide()
-	-- SkillFrame:Hide() -- A réactiver en PROD
+	SkillFrame:Hide() -- A réactiver en PROD
 
 
 	-- Création des entête de compétence du volet principal
@@ -232,21 +237,9 @@ f:SetScript("OnEvent", function(self, event)
 		displayTableRessourceValue:SetText(displayRessourceValue)
 	end
 
-
---[[ 	-- Mise à jour de la table d'affichage
-	local function updateDisplayTable()
-    local displayText = ""
-    for name, player in pairs(players) do
-        local skillName = player.skillName or ""
-        local diceRoll = player.diceRoll or ""
-        local diceValue = player.diceValue or ""
-        local costRoll = player.costRoll or ""
-        local costValue = player.costValue or ""
-        displayText = displayText .. "|cFF52BE80" .. name .. "|r " .. skillName .. "" .. diceRoll .. "" .. diceValue .. "" .. costRoll .. "" .. costValue .. "\n"
-		end
-		displayTable:SetText(displayText)
-	end ]]
-
+----------------------------------
+-- Liste des compétences page 1 --
+----------------------------------
 
 	for i = 1, 15 do
 	
@@ -287,7 +280,29 @@ f:SetScript("OnEvent", function(self, event)
 			lastCostRoll = rollDice(MySkills[i].cost)
 			lastCostValue = MySkills[i].cost
 			C_ChatInfo.SendAddonMessage("SkillSheet", "ROLL@" .. playerName .. "@" .. MySkills[i].name .. "@" .. lastDiceRoll .. "@" .. MySkills[i].roll .. "@" .. lastCostRoll .. "@" .. MySkills[i].cost .. "@" .. healthValue .. "@" .. ressourceValue, channel)
-			--print("ROLL@" .. playerName .. "@" .. MySkills[i].name .. "@" .. rollDice(MySkills[i].roll) .. "@(" .. MySkills[i].roll .. ")@" .. rollDice(MySkills[i].cost) .. "@(" .. MySkills[i].cost .. ")")
+			-- partie gérant l'affichage de la notification en emote ou en communication interne
+			local displayRoll = "" -- a utiliser pour l'affichage
+			local displayRollValue = "" -- temporaire
+			local displayCost = "" -- a utiliser pour l'affichage
+			local displayCostValue = "" -- temporaire
+			if lastDiceRoll == MySkills[i].roll then
+				displayRoll = lastDiceRoll
+			else
+				displayRollValue = ("(" .. MySkills[i].roll .. ")")
+				displayRoll = displayRoll .. lastDiceRoll .. " " .. displayRollValue
+			end
+			if lastCostRoll == MySkills[i].cost then
+				displayCost = displayCost .. lastCostRoll
+			else
+				displayCostValue = ("(" .. MySkills[i].cost .. ")")
+				displayCost = displayCost .. lastCostRoll .. " " .. displayCostValue
+			end
+			local emoteChatMessage = ("utilise sa compétence " .. MySkills[i].name .. ", Jet " .. displayRoll .. ", coût " .. displayCost)
+			if IsInGroup() then
+				C_ChatInfo.SendAddonMessage("SkillSheet", "EMOTE@" .. playerName .. " " .. emoteChatMessage)
+			else
+				SendChatMessage(emoteChatMessage, "EMOTE" )
+			end
 		end)
 		if MySkills[i].name == "" then
 			rollButton:Hide()
@@ -621,6 +636,8 @@ f:SetScript("OnEvent", function(self, event)
 				--print("message reçu : " .. message)
 			elseif action == "SYNC" then
 				onSyncMessage(name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue)
+			elseif action == "EMOTE" then
+				print("|cffffff00" .. name) -- affiche la notification du jet
 			end
 		end
 	end)
