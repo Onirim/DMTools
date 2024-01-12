@@ -27,6 +27,45 @@ function rollDice(dice)
     end
 end
 
+-- Création du bouton de minimap
+local icon = LibStub("LibDBIcon-1.0")
+local f = CreateFrame("Frame")
+f:RegisterEvent("VARIABLES_LOADED")
+f:SetScript("OnEvent", function(self, event)
+    if type(miniMapDb) ~= "table" then
+        miniMapDb = {}
+    end
+    if type(miniMapDb.minimapIcon) ~= "table" then
+        miniMapDb.minimapIcon = {}
+    end
+    SkillSheetCreateMinimapButton(miniMapDb.minimapIcon)
+end)
+
+function SkillSheetCreateMinimapButton()
+    local ldb = LibStub("LibDataBroker-1.1")
+    local minimapButton = ldb:NewDataObject('SkillSheetMinimapIcon', { --rename this more unique to your addon
+        type = "launcher",
+        icon = 633008,
+        OnClick = function(_, button)
+            if button == "LeftButton" then
+                if SkillFrame:IsVisible() then
+                SkillFrame:Hide()
+                else
+                SkillFrame:Show()
+                end
+            end
+        end,
+        OnTooltipShow = function(tooltip)
+            if not tooltip or not tooltip.AddLine then return end
+            tooltip:AddLine("SkillSheet                                    " .. version)
+            tooltip:AddLine(" ")
+            tooltip:AddLine(L["Open/Close minimap button"])
+        end,
+    })
+    local minimapIcon = LibStub("LibDBIcon-1.0")
+    minimapIcon:Register('SkillSheetMinimapIcon', minimapButton, miniMapDb) --last arg is usually a table in your saved variables so it remembers the positon
+end
+
 -----------------------
 -- Variables mémoire --
 -----------------------
@@ -51,6 +90,7 @@ end)
 -- ATTENTE DU CHARGEMENT DE LA SAUVEGARDE --
 --------------------------------------------
 local f = CreateFrame("Frame")
+local icon = LibStub("LibDBIcon-1.0")
 f:RegisterEvent("VARIABLES_LOADED")
 f:SetScript("OnEvent", function(self, event)
     -- Vérifiez si MySkills est nil, si c'est le cas, initialisez-le à une table vide
@@ -64,13 +104,23 @@ f:SetScript("OnEvent", function(self, event)
         MySkills[1].roll = L["First Roll"]
         MySkills[1].cost = L["First Cost"]
         MySkills[1].description = L["First Description"]
+		MySkills[2].name = L["Second Skill"]
+        MySkills[2].roll = L["Second Roll"]
+        MySkills[2].cost = L["Second Cost"]
+        MySkills[2].description = L["Second Description"]
+		MySkills[3].name = L["Third Skill"]
+        MySkills[3].roll = L["Third Roll"]
+        MySkills[3].cost = L["Third Cost"]
+        MySkills[3].description = L["Third Description"]
 	end
 	if healthValue == nil then
-		healthValue = ""
+		healthValue = "10/10"
 	end
 	if ressourceValue == nil then
-		ressourceValue = ""
+		ressourceValue = "10/10"
 	end
+	
+
 	--------------------------
 	-- INTERFACE PRINCIPALE --
 	--------------------------
@@ -153,7 +203,7 @@ f:SetScript("OnEvent", function(self, event)
 	-- Création de la table d'affichage des noms
 	local displayTableName = SkillFrameGM:CreateFontString(nil, "OVERLAY")
 	displayTableName:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
-	displayTableName:SetPoint("TOP", SkillFrameGM, "BOTTOM", -290, 455)
+	displayTableName:SetPoint("TOP", SkillFrameGM, "BOTTOM", -285, 455)
 	displayTableName:SetJustifyH("LEFT")
 	displayTableName:SetJustifyV("TOP")
 	displayTableName:SetText("")
@@ -167,28 +217,28 @@ f:SetScript("OnEvent", function(self, event)
 	-- Création de la table d'affichage du jet + valeur
 	local displayTableRoll = SkillFrameGM:CreateFontString(nil, "OVERLAY")
 	displayTableRoll:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
-	displayTableRoll:SetPoint("TOP", SkillFrameGM, "BOTTOM", -5, 455)
+	displayTableRoll:SetPoint("TOP", SkillFrameGM, "BOTTOM", 10, 455)
 	displayTableRoll:SetJustifyH("CENTER")
 	displayTableRoll:SetJustifyV("TOP")
 	displayTableRoll:SetText("")
 	-- Création de la table d'affichage des jets de ressources
 	local displayTableRessource = SkillFrameGM:CreateFontString(nil, "OVERLAY")
 	displayTableRessource:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
-	displayTableRessource:SetPoint("TOP", SkillFrameGM, "BOTTOM", 95, 455)
+	displayTableRessource:SetPoint("TOP", SkillFrameGM, "BOTTOM", 114, 455)
 	displayTableRessource:SetJustifyH("CENTER")
 	displayTableRessource:SetJustifyV("TOP")
 	displayTableRessource:SetText("")
 	-- Création de la table d'affichage de la santé
 	local displayTableHealthValue = SkillFrameGM:CreateFontString(nil, "OVERLAY")
 	displayTableHealthValue:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
-	displayTableHealthValue:SetPoint("TOP", SkillFrameGM, "BOTTOM", 188, 455)
+	displayTableHealthValue:SetPoint("TOP", SkillFrameGM, "BOTTOM", 209, 455)
 	displayTableHealthValue:SetJustifyH("CENTER")
 	displayTableHealthValue:SetJustifyV("TOP")
 	displayTableHealthValue:SetText("")
 	-- Création de la table d'affichage de la ressource
 	local displayTableRessourceValue = SkillFrameGM:CreateFontString(nil, "OVERLAY")
 	displayTableRessourceValue:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
-	displayTableRessourceValue:SetPoint("TOP", SkillFrameGM, "BOTTOM", 275, 455)
+	displayTableRessourceValue:SetPoint("TOP", SkillFrameGM, "BOTTOM", 280, 455)
 	displayTableRessourceValue:SetJustifyH("CENTER")
 	displayTableRessourceValue:SetJustifyV("TOP")
 	displayTableRessourceValue:SetText("")	
@@ -203,7 +253,7 @@ f:SetScript("OnEvent", function(self, event)
 	local displayHealthValue = displayHealthValue or ""
 	local displayRessourceValue = displayRessourceValue or ""
 		for name, player in pairs(players) do
-			displayName = displayName .. "|cFF52BE80" .. name .. "\n\n"
+			displayName = displayName .. "|cFF52BE80" .. string.sub(string.format("%-12s",name),1,12) .. "\n\n"
 			local skillName = player.skillName or ""
 			displaySkillName = displaySkillName .. skillName .. "\n\n"
 			local diceRoll = player.diceRoll or ""
@@ -262,8 +312,8 @@ f:SetScript("OnEvent", function(self, event)
 		-- Bouton de roll
 		local rollButton = CreateFrame("Button", nil, SkillFramePage1, "GameMenuButtonTemplate")
 		local playerName = UnitName("player") -- Obtient le nom du joueur
-		rollButton:SetPoint("TOPLEFT", 365, -30 * i - 115)
-		rollButton:SetSize(60, 25)
+		rollButton:SetPoint("TOPLEFT", 380, -30 * i - 115)
+		rollButton:SetSize(50, 25)
 		rollButton:SetText(L["Roll"])
 		rollButton:SetScript("OnClick", function()
 			PlaySound(36627)
@@ -315,7 +365,7 @@ f:SetScript("OnEvent", function(self, event)
 		-- Bouton d'édition
 		SkillSheetEditIsOpened = false
 		local editButton = CreateFrame("Button", nil, SkillFramePage1, "GameMenuButtonTemplate")
-		editButton:SetPoint("TOPLEFT", 430, -30 * i - 115)
+		editButton:SetPoint("TOPLEFT", 432, -30 * i - 115)
 		editButton:SetSize(25, 25)
 		editButton:SetText("?")
 		editButton:SetScript("OnClick", function()
@@ -348,6 +398,7 @@ f:SetScript("OnEvent", function(self, event)
 				skillNameBox:SetPoint("TOPLEFT", 15, -50)
 				skillNameBox:SetAutoFocus(false)
 				skillNameBox:SetText(MySkills[i].name)
+				skillNameBox:SetMaxLetters(30)
 				-- Zone de texte pour la valeur du dé
 				local editDiceRoll = editFrame:CreateFontString(nil, "OVERLAY")
 				editDiceRoll:SetFontObject("GameFontNormal")
@@ -359,6 +410,7 @@ f:SetScript("OnEvent", function(self, event)
 				diceValueBox:SetPoint("TOPLEFT", 212, -50)
 				diceValueBox:SetAutoFocus(false)
 				diceValueBox:SetText(MySkills[i].roll)
+				diceValueBox:SetMaxLetters(12)
 				-- Zone de texte pour le coût
 				local editTextCost = editFrame:CreateFontString(nil, "OVERLAY")
 				editTextCost:SetFontObject("GameFontNormal")
@@ -370,6 +422,7 @@ f:SetScript("OnEvent", function(self, event)
 				CostValueBox:SetPoint("TOPLEFT", 310, -50)
 				CostValueBox:SetAutoFocus(false)
 				CostValueBox:SetText(MySkills[i].cost)
+				CostValueBox:SetMaxLetters(10)
 				-- Zone de texte pour la description de la compétence
 				local editSkillDescription = editFrame:CreateFontString(nil, "OVERLAY")
 				editSkillDescription:SetFontObject("GameFontNormal")
@@ -396,7 +449,7 @@ f:SetScript("OnEvent", function(self, event)
 				skillDescriptionBox:SetText(MySkills[i].description)
 				-- Bouton "Enregistrer"
 				local saveButton = CreateFrame("Button", nil, editFrame, "GameMenuButtonTemplate")
-				saveButton:SetPoint("TOPLEFT", 10, -300)
+				saveButton:SetPoint("TOPLEFT", 214, -300)
 				saveButton:SetSize(180, 25)
 				saveButton:SetText(L["Save"])
 				saveButton:SetScript("OnClick", function()
@@ -410,6 +463,26 @@ f:SetScript("OnEvent", function(self, event)
 					MySkills[i].roll = diceValueText
 					MySkills[i].cost = costValueText
 					MySkills[i].description = descriptionValueText
+					skillName:SetText("|cFFFFFFFF" .. MySkills[i].name)
+					diceValue:SetText("|cFFFFFFFF" .. MySkills[i].roll)
+					costValue:SetText("|cFFFFFFFF" .. MySkills[i].cost)
+					if MySkills[i].name == "" then
+						rollButton:Hide()
+						else 
+						rollButton:Show()
+					end
+				editFrame:Hide()
+				end)
+				-- Bouton "Supprimer"
+				local deleteButton = CreateFrame("Button", nil, editFrame, "GameMenuButtonTemplate")
+				deleteButton:SetPoint("TOPLEFT", 10, -300)
+				deleteButton:SetSize(120, 25)
+				deleteButton:SetText(L["Delete"])
+				deleteButton:SetScript("OnClick", function()
+					MySkills[i].name = ""
+					MySkills[i].roll = ""
+					MySkills[i].cost = ""
+					MySkills[i].description = ""
 					skillName:SetText("|cFFFFFFFF" .. MySkills[i].name)
 					diceValue:SetText("|cFFFFFFFF" .. MySkills[i].roll)
 					costValue:SetText("|cFFFFFFFF" .. MySkills[i].cost)
@@ -452,8 +525,8 @@ for i = 16, 30 do
 	-- Bouton de roll
 	local rollButton = CreateFrame("Button", nil, SkillFramePage2, "GameMenuButtonTemplate")
 	local playerName = UnitName("player") -- Obtient le nom du joueur
-	rollButton:SetPoint("TOPLEFT", 365, -30 * j - 115)
-	rollButton:SetSize(60, 25)
+	rollButton:SetPoint("TOPLEFT", 380, -30 * j - 115)
+	rollButton:SetSize(50, 25)
 	rollButton:SetText("Roll")
 	rollButton:SetScript("OnClick", function()
 		PlaySound(36627)
@@ -505,7 +578,7 @@ for i = 16, 30 do
 	-- Bouton d'édition
 	SkillSheetEditIsOpened = false
 	local editButton = CreateFrame("Button", nil, SkillFramePage2, "GameMenuButtonTemplate")
-	editButton:SetPoint("TOPLEFT", 430, -30 * j - 115)
+	editButton:SetPoint("TOPLEFT", 432, -30 * j - 115)
 	editButton:SetSize(25, 25)
 	editButton:SetText("?")
 	editButton:SetScript("OnClick", function()
@@ -538,6 +611,7 @@ for i = 16, 30 do
 			skillNameBox:SetPoint("TOPLEFT", 15, -50)
 			skillNameBox:SetAutoFocus(false)
 			skillNameBox:SetText(MySkills[i].name)
+			skillNameBox:SetMaxLetters(30)
 			-- Zone de texte pour la valeur du dé
 			local editDiceRoll = editFrame:CreateFontString(nil, "OVERLAY")
 			editDiceRoll:SetFontObject("GameFontNormal")
@@ -549,6 +623,7 @@ for i = 16, 30 do
 			diceValueBox:SetPoint("TOPLEFT", 212, -50)
 			diceValueBox:SetAutoFocus(false)
 			diceValueBox:SetText(MySkills[i].roll)
+			diceValueBox:SetMaxLetters(12)
 			-- Zone de texte pour le coût
 			local editTextCost = editFrame:CreateFontString(nil, "OVERLAY")
 			editTextCost:SetFontObject("GameFontNormal")
@@ -560,6 +635,7 @@ for i = 16, 30 do
 			CostValueBox:SetPoint("TOPLEFT", 310, -50)
 			CostValueBox:SetAutoFocus(false)
 			CostValueBox:SetText(MySkills[i].cost)
+			CostValueBox:SetMaxLetters(10)
 			-- Zone de texte pour la description de la compétence
 			local editSkillDescription = editFrame:CreateFontString(nil, "OVERLAY")
 			editSkillDescription:SetFontObject("GameFontNormal")
@@ -586,7 +662,7 @@ for i = 16, 30 do
 			skillDescriptionBox:SetText(MySkills[i].description)
 			-- Bouton "Enregistrer"
 			local saveButton = CreateFrame("Button", nil, editFrame, "GameMenuButtonTemplate")
-			saveButton:SetPoint("TOPLEFT", 10, -300)
+			saveButton:SetPoint("TOPLEFT", 214, -300)
 			saveButton:SetSize(180, 25)
 			saveButton:SetText(L["Save"])
 			saveButton:SetScript("OnClick", function()
@@ -600,6 +676,26 @@ for i = 16, 30 do
 				MySkills[i].roll = diceValueText
 				MySkills[i].cost = costValueText
 				MySkills[i].description = descriptionValueText
+				skillName:SetText("|cFFFFFFFF" .. MySkills[i].name)
+				diceValue:SetText("|cFFFFFFFF" .. MySkills[i].roll)
+				costValue:SetText("|cFFFFFFFF" .. MySkills[i].cost)
+				if MySkills[i].name == "" then
+					rollButton:Hide()
+					else 
+					rollButton:Show()
+				end
+			editFrame:Hide()
+			end)
+			-- Bouton "Supprimer"
+			local deleteButton = CreateFrame("Button", nil, editFrame, "GameMenuButtonTemplate")
+			deleteButton:SetPoint("TOPLEFT", 10, -300)
+			deleteButton:SetSize(120, 25)
+			deleteButton:SetText(L["Delete"])
+			deleteButton:SetScript("OnClick", function()
+				MySkills[i].name = ""
+				MySkills[i].roll = ""
+				MySkills[i].cost = ""
+				MySkills[i].description = ""
 				skillName:SetText("|cFFFFFFFF" .. MySkills[i].name)
 				diceValue:SetText("|cFFFFFFFF" .. MySkills[i].roll)
 				costValue:SetText("|cFFFFFFFF" .. MySkills[i].cost)
@@ -642,8 +738,8 @@ for i = 31, 45 do
 	-- Bouton de roll
 	local rollButton = CreateFrame("Button", nil, SkillFramePage3, "GameMenuButtonTemplate")
 	local playerName = UnitName("player") -- Obtient le nom du joueur
-	rollButton:SetPoint("TOPLEFT", 365, -30 * j - 115)
-	rollButton:SetSize(60, 25)
+	rollButton:SetPoint("TOPLEFT", 380, -30 * j - 115)
+	rollButton:SetSize(50, 25)
 	rollButton:SetText("Roll")
 	rollButton:SetScript("OnClick", function()
 		PlaySound(36627)
@@ -695,7 +791,7 @@ for i = 31, 45 do
 	-- Bouton d'édition
 	SkillSheetEditIsOpened = false
 	local editButton = CreateFrame("Button", nil, SkillFramePage3, "GameMenuButtonTemplate")
-	editButton:SetPoint("TOPLEFT", 430, -30 * j - 115)
+	editButton:SetPoint("TOPLEFT", 432, -30 * j - 115)
 	editButton:SetSize(25, 25)
 	editButton:SetText("?")
 	editButton:SetScript("OnClick", function()
@@ -728,6 +824,7 @@ for i = 31, 45 do
 			skillNameBox:SetPoint("TOPLEFT", 15, -50)
 			skillNameBox:SetAutoFocus(false)
 			skillNameBox:SetText(MySkills[i].name)
+			skillNameBox:SetMaxLetters(30)
 			-- Zone de texte pour la valeur du dé
 			local editDiceRoll = editFrame:CreateFontString(nil, "OVERLAY")
 			editDiceRoll:SetFontObject("GameFontNormal")
@@ -739,6 +836,7 @@ for i = 31, 45 do
 			diceValueBox:SetPoint("TOPLEFT", 212, -50)
 			diceValueBox:SetAutoFocus(false)
 			diceValueBox:SetText(MySkills[i].roll)
+			diceValueBox:SetMaxLetters(12)
 			-- Zone de texte pour le coût
 			local editTextCost = editFrame:CreateFontString(nil, "OVERLAY")
 			editTextCost:SetFontObject("GameFontNormal")
@@ -750,6 +848,7 @@ for i = 31, 45 do
 			CostValueBox:SetPoint("TOPLEFT", 310, -50)
 			CostValueBox:SetAutoFocus(false)
 			CostValueBox:SetText(MySkills[i].cost)
+			CostValueBox:SetMaxLetters(10)
 			-- Zone de texte pour la description de la compétence
 			local editSkillDescription = editFrame:CreateFontString(nil, "OVERLAY")
 			editSkillDescription:SetFontObject("GameFontNormal")
@@ -776,7 +875,7 @@ for i = 31, 45 do
 			skillDescriptionBox:SetText(MySkills[i].description)
 			-- Bouton "Enregistrer"
 			local saveButton = CreateFrame("Button", nil, editFrame, "GameMenuButtonTemplate")
-			saveButton:SetPoint("TOPLEFT", 10, -300)
+			saveButton:SetPoint("TOPLEFT", 214, -300)
 			saveButton:SetSize(180, 25)
 			saveButton:SetText(L["Save"])
 			saveButton:SetScript("OnClick", function()
@@ -800,6 +899,26 @@ for i = 31, 45 do
 				end
 			editFrame:Hide()
 			end)
+			-- Bouton "Supprimer"
+			local deleteButton = CreateFrame("Button", nil, editFrame, "GameMenuButtonTemplate")
+			deleteButton:SetPoint("TOPLEFT", 10, -300)
+			deleteButton:SetSize(120, 25)
+			deleteButton:SetText(L["Delete"])
+			deleteButton:SetScript("OnClick", function()
+				MySkills[i].name = ""
+				MySkills[i].roll = ""
+				MySkills[i].cost = ""
+				MySkills[i].description = ""
+				skillName:SetText("|cFFFFFFFF" .. MySkills[i].name)
+				diceValue:SetText("|cFFFFFFFF" .. MySkills[i].roll)
+				costValue:SetText("|cFFFFFFFF" .. MySkills[i].cost)
+				if MySkills[i].name == "" then
+					rollButton:Hide()
+					else 
+					rollButton:Show()
+				end
+			editFrame:Hide()
+			end)
 		end
 	end)
 
@@ -810,6 +929,27 @@ end
 	SkillButtonPage1:SetPoint("TOPLEFT", 60, -30)
 	SkillButtonPage1:SetSize(80, 25)
 	SkillButtonPage1:SetText("Page 1")
+	SkillButtonPage1:Disable()
+	
+	-- Bouton page 2
+	local SkillButtonPage2 = CreateFrame("Button", nil, SkillFrame, "GameMenuButtonTemplate")
+	SkillButtonPage2:SetPoint("TOPLEFT", 145, -30)
+	SkillButtonPage2:SetSize(80, 25)
+	SkillButtonPage2:SetText("Page 2")
+	
+	-- Bouton page 3
+	local SkillButtonPage3 = CreateFrame("Button", nil, SkillFrame, "GameMenuButtonTemplate")
+	SkillButtonPage3:SetPoint("TOPLEFT", 230, -30)
+	SkillButtonPage3:SetSize(80, 25)
+	SkillButtonPage3:SetText("Page 3")
+	
+	-- Bouton Interface MJ
+	local SkillButtonGM = CreateFrame("Button", nil, SkillFrame, "GameMenuButtonTemplate")
+	SkillButtonGM:SetPoint("TOPLEFT", 350, -30)
+	SkillButtonGM:SetSize(100, 25)
+	SkillButtonGM:SetText(L["GM Screen"])
+	
+	-- actions des boutons
 	SkillButtonPage1:SetScript("OnClick", function()
 		SkillFramePage1:Show()
 		SkillFramePage2:Hide()
@@ -819,12 +959,11 @@ end
 		gmHeaders:Hide()
 		SkillFrame:SetSize(460, 600) -- Largeur, Hauteur
 		line:SetWidth(SkillFrame:GetWidth())
-	end)
-	-- Bouton page 2
-	local SkillButtonPage2 = CreateFrame("Button", nil, SkillFrame, "GameMenuButtonTemplate")
-	SkillButtonPage2:SetPoint("TOPLEFT", 145, -30)
-	SkillButtonPage2:SetSize(80, 25)
-	SkillButtonPage2:SetText("Page 2")
+		SkillButtonPage1:Disable()
+		SkillButtonPage2:Enable()
+		SkillButtonPage3:Enable()
+		SkillButtonGM:Enable()
+	end)	
 	SkillButtonPage2:SetScript("OnClick", function()
 		SkillFramePage1:Hide()
 		SkillFramePage2:Show()
@@ -834,13 +973,11 @@ end
 		gmHeaders:Hide()
 		SkillFrame:SetSize(460, 600) -- Largeur, Hauteur
 		line:SetWidth(SkillFrame:GetWidth())
-
+		SkillButtonPage1:Enable()
+		SkillButtonPage2:Disable()
+		SkillButtonPage3:Enable()
+		SkillButtonGM:Enable()
 	end)
-	-- Bouton page 3
-	local SkillButtonPage3 = CreateFrame("Button", nil, SkillFrame, "GameMenuButtonTemplate")
-	SkillButtonPage3:SetPoint("TOPLEFT", 230, -30)
-	SkillButtonPage3:SetSize(80, 25)
-	SkillButtonPage3:SetText("Page 3")
 	SkillButtonPage3:SetScript("OnClick", function()
 		SkillFramePage1:Hide()
 		SkillFramePage2:Hide()
@@ -850,13 +987,11 @@ end
 		gmHeaders:Hide()
 		SkillFrame:SetSize(460, 600) -- Largeur, Hauteur
 		line:SetWidth(SkillFrame:GetWidth())
-
+		SkillButtonPage1:Enable()
+		SkillButtonPage2:Enable()
+		SkillButtonPage3:Disable()
+		SkillButtonGM:Enable()
 	end)
-	-- Bouton Interface MJ
-	local SkillButtonGM = CreateFrame("Button", nil, SkillFrame, "GameMenuButtonTemplate")
-	SkillButtonGM:SetPoint("TOPLEFT", 350, -30)
-	SkillButtonGM:SetSize(100, 25)
-	SkillButtonGM:SetText(L["GM Screen"])
 	SkillButtonGM:SetScript("OnClick", function()
 		SkillFramePage1:Hide()
 		SkillFramePage2:Hide()
@@ -866,7 +1001,10 @@ end
 		gmHeaders:Show()
 		SkillFrame:SetSize(660, 600) -- Largeur, Hauteur
 		line:SetWidth(SkillFrame:GetWidth())
-
+		SkillButtonPage1:Enable()
+		SkillButtonPage2:Enable()
+		SkillButtonPage3:Enable()
+		SkillButtonGM:Disable()
 	end)
 	
 	-- Cadre des points de vie

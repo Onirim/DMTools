@@ -1,9 +1,10 @@
-## Interface: 100200
-## Version: 1.0.0
+## Interface: 100250
+## Version: 1.1.0
 ## Title: Skill Sheet
 ## Notes: Character Sheet and dice rolling for roleplayers
 ## Author: Onirim
 ## SavedVariablesPerCharacter: MySkills, healthValue, ressourceValue
+## SavedVariables: miniMapDb
 
 Localization.lua
 Core.lua
