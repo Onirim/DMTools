@@ -76,6 +76,7 @@ local lastCostRoll = ""
 local lastCostValue = ""
 local lastHealthValue = ""
 local lastRessourceValue = ""
+local nameColors = {}
 
 ----------------------------
 --   MESSAGE D'ACCUEIL    --
@@ -243,9 +244,10 @@ f:SetScript("OnEvent", function(self, event)
 	displayTableRessourceValue:SetJustifyV("TOP")
 	displayTableRessourceValue:SetText("")	
 
-
 	-- Mise à jour de la table
+	
 	local function updateDisplayTable()
+	--local nameColor = "|cFF52BE80"
 	local displayName = displayName or ""
 	local displaySkillName = displaySkillName or ""
 	local displayRoll = displayRoll or ""
@@ -253,7 +255,8 @@ f:SetScript("OnEvent", function(self, event)
 	local displayHealthValue = displayHealthValue or ""
 	local displayRessourceValue = displayRessourceValue or ""
 		for name, player in pairs(players) do
-			displayName = displayName .. "|cFF52BE80" .. string.sub(string.format("%-12s",name),1,12) .. "\n\n"
+			local color = nameColors[name] or "|cFF52BE80"
+			displayName = displayName .. color .. string.sub(string.format("%-12s",name),1,12) .. "\n\n"
 			local skillName = player.skillName or ""
 			displaySkillName = displaySkillName .. skillName .. "\n\n"
 			local diceRoll = player.diceRoll or ""
@@ -284,6 +287,100 @@ f:SetScript("OnEvent", function(self, event)
 		displayTableHealthValue:SetText(displayHealthValue)
 		displayTableRessourceValue:SetText(displayRessourceValue)
 	end
+
+	-- Création de la boîte de dialogue de confirmation de nouveau tour joueur
+	local confirmNewTurn = CreateFrame("Frame", "confirmNewTurn", SkillFrameGM, "ButtonFrameTemplate")
+	ButtonFrameTemplate_HideButtonBar(confirmNewTurn)
+	ButtonFrameTemplate_HidePortrait(confirmNewTurn)
+	confirmNewTurn.Inset:Hide() 
+	confirmNewTurn:SetSize(400, 100)
+	confirmNewTurn:SetPoint("CENTER", SkillFrameGM, "CENTER", 300, 55)
+	confirmNewTurn:Hide()
+	confirmNewTurn:SetFrameStrata("HIGH")
+
+	local confirmNewTurnText = confirmNewTurn:CreateFontString(nil, "OVERLAY")
+	confirmNewTurnText:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
+	confirmNewTurnText:SetPoint("CENTER")
+	confirmNewTurnText:SetText(L["Confirm new turn"])
+
+	local yesNewTurn = CreateFrame("Button", nil, confirmNewTurn, "GameMenuButtonTemplate")
+	yesNewTurn:SetPoint("BOTTOMLEFT", confirmNewTurn, "BOTTOM", 10, 10)
+	yesNewTurn:SetSize(80, 25)
+	yesNewTurn:SetText(L["Yes"])
+	yesNewTurn:SetScript("OnClick", function()
+		local playerName = UnitName("player") -- Obtient le nom du joueur
+			local status, result = pcall(function() return
+				AddOn_TotalRP3.Player.GetCurrentUser():GetFirstName() end)
+				if status then
+					playerName =  AddOn_TotalRP3.Player.GetCurrentUser():GetFirstName()
+				end
+			C_ChatInfo.SendAddonMessage("SkillSheet", "TURN@" .. playerName .. "@" .. "@" .. "@" .. "@" .. "@" .. "@" .. "@", channel)
+			confirmNewTurn:Hide()
+	end)
+
+	local NoNewTurn = CreateFrame("Button", nil, confirmNewTurn, "GameMenuButtonTemplate")
+	NoNewTurn:SetPoint("BOTTOMRIGHT", confirmNewTurn, "BOTTOM", -10, 10)
+	NoNewTurn:SetSize(80, 25)
+	NoNewTurn:SetText(L["No"])
+	NoNewTurn:SetScript("OnClick", function()
+		confirmNewTurn:Hide()
+	end)
+
+	-- Création du bouton de nouveau tour
+	local newTurnButton = CreateFrame("Button", nil, SkillFrameGM, "GameMenuButtonTemplate")
+	newTurnButton:SetPoint("TOPLEFT", 440, -30)
+	newTurnButton:SetSize(110, 25)
+	newTurnButton:SetText(L["Player Turn"])
+	newTurnButton:SetScript("OnClick", function()
+		confirmNewTurn:Show()
+	end)
+
+	-- Création de la boîte de dialogue de confirmation de nouveau tour ennemi
+	local confirmNewEnemyTurn = CreateFrame("Frame", "confirmNewEnemyTurn", SkillFrameGM, "ButtonFrameTemplate")
+	ButtonFrameTemplate_HideButtonBar(confirmNewEnemyTurn)
+	ButtonFrameTemplate_HidePortrait(confirmNewEnemyTurn)
+	confirmNewEnemyTurn.Inset:Hide() 
+	confirmNewEnemyTurn:SetSize(400, 100)
+	confirmNewEnemyTurn:SetPoint("CENTER", SkillFrameGM, "CENTER", 300, -55)
+	confirmNewEnemyTurn:Hide()
+	confirmNewEnemyTurn:SetFrameStrata("HIGH")
+
+	local confirmNewEnemyTurnText = confirmNewEnemyTurn:CreateFontString(nil, "OVERLAY")
+	confirmNewEnemyTurnText:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
+	confirmNewEnemyTurnText:SetPoint("CENTER")
+	confirmNewEnemyTurnText:SetText(L["Confirm new enemy turn"])
+
+	local yesNewEnemyTurn = CreateFrame("Button", nil, confirmNewEnemyTurn, "GameMenuButtonTemplate")
+	yesNewEnemyTurn:SetPoint("BOTTOMLEFT", confirmNewEnemyTurn, "BOTTOM", 10, 10)
+	yesNewEnemyTurn:SetSize(80, 25)
+	yesNewEnemyTurn:SetText(L["Yes"])
+	yesNewEnemyTurn:SetScript("OnClick", function()
+		local playerName = UnitName("player") -- Obtient le nom du joueur
+			local status, result = pcall(function() return
+				AddOn_TotalRP3.Player.GetCurrentUser():GetFirstName() end)
+				if status then
+					playerName =  AddOn_TotalRP3.Player.GetCurrentUser():GetFirstName()
+				end
+			C_ChatInfo.SendAddonMessage("SkillSheet", "ENEMY@" .. playerName .. "@" .. "@" .. "@" .. "@" .. "@" .. "@" .. "@", channel)
+			confirmNewEnemyTurn:Hide()
+	end)
+
+	local NoNewEnemyTurn = CreateFrame("Button", nil, confirmNewEnemyTurn, "GameMenuButtonTemplate")
+	NoNewEnemyTurn:SetPoint("BOTTOMRIGHT", confirmNewEnemyTurn, "BOTTOM", -10, 10)
+	NoNewEnemyTurn:SetSize(80, 25)
+	NoNewEnemyTurn:SetText(L["No"])
+	NoNewEnemyTurn:SetScript("OnClick", function()
+		confirmNewEnemyTurn:Hide()
+	end)
+
+	-- Création du bouton de nouveau tour ennemi
+	local newEnemyTurnButton = CreateFrame("Button", nil, SkillFrameGM, "GameMenuButtonTemplate")
+	newEnemyTurnButton:SetPoint("TOPLEFT", 440, -60)
+	newEnemyTurnButton:SetSize(110, 25)
+	newEnemyTurnButton:SetText(L["Enemy Turn"])
+	newEnemyTurnButton:SetScript("OnClick", function()
+		confirmNewEnemyTurn:Show()
+	end)
 
 ----------------------------------
 -- Liste des compétences page 1 --
@@ -1132,6 +1229,32 @@ end
 		C_ChatInfo.SendAddonMessage("SkillSheet", "HELLO@" .. playerName .. "@" .. "@" .. "@" .. "@" .. "@" .. "@" .. healthValue .. "@" .. ressourceValue, channel)
 	end
 
+	-- Fonctions de gestion des tours joueur
+	local function newTurn(name)
+		-- Change la couleur de tous les noms en rouge
+		for name, player in pairs(players) do
+			nameColors[name] = "|cFFff4500" -- Rouge
+		end
+		PlaySound(8959)
+		print("|cffffff00" .. name .. L["has started a new turn"])
+		newTurnButton:Disable()
+		newEnemyTurnButton:Enable()
+		updateDisplayTable() -- Met à jour la table
+	end
+
+	-- Fonctions de gestion des tours ennemis
+	local function newEnemyTurn(name)
+		-- Change la couleur de tous les noms en rouge
+		for name, player in pairs(players) do
+			nameColors[name] = "|cffffff00" -- Jaune
+		end
+		PlaySound(8959)
+		print("|cffffff00" .. name .. L["has started a new enemy turn"])
+		newTurnButton:Enable()
+		newEnemyTurnButton:Disable()
+		updateDisplayTable() -- Met à jour la table
+	end
+
 	-- Création du ticker
 	local ticker = C_Timer.NewTicker(5, sendInfo)
 	------------------------
@@ -1160,11 +1283,16 @@ end
 			if action == "HELLO" then
 				onHelloMessage(name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue)
 			elseif action == "ROLL" then
+				nameColors[name] = "|cFF52BE80"
 				onHelloMessage(name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue)
 			elseif action == "SYNC" then
 				onSyncMessage(name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue)
 			elseif action == "EMOTE" then
 				print("|cffffff00" .. name) -- affiche la notification du jet
+			elseif action == "TURN" then
+				newTurn(name)
+			elseif action == "ENEMY" then
+				newEnemyTurn(name)
 			end
 		end
 	end)

@@ -34,7 +34,15 @@ L["frFR"] = {
 	["GM Screen"] = "Interface MJ",
 	["Health"] = "Santé",
 	["Resource"] = "Ressource",
-	["Delete"] = "Supprimer"
+	["Delete"] = "Supprimer",
+	["Player Turn"] = "Tour joueur",
+	["Enemy Turn"] = "Tour ennemi",
+	["Confirm new turn"] = "Voulez-vous vraiment démarrer un nouveau tour joueur ?",
+	["Yes"] = "Oui",
+	["No"] = "Non",
+	["has started a new turn"] = " a démarré un nouveau tour pour les joueurs !",
+	["has started a new enemy turn"] = " a démarré un nouveau tour ennemi !",
+	["Confirm new enemy turn"] = "Voulez-vous vraiment démarrer un nouveau tour ennemi ?"
 		}
 	
 L["enUS"] = {
@@ -67,7 +75,15 @@ L["enUS"] = {
 	["GM Screen"] = "GM Screen",
 	["Health"] = "Health",
 	["Resource"] = "Resource",
-	["Delete"] = "Delete"
+	["Delete"] = "Delete",
+	["Player Turn"] = "Player Turn",
+	["Enemy Turn"] = "Enemy Turn",
+	["Confirm new turn"] = "Do you really want to start a new player turn?",
+	["Yes"] = "Yes",
+	["No"] = "No",
+	["has started a new turn"] = " has started a new player turn!",
+	["has started a new enemy turn"] = "has started a new enemy turn!",
+	["Confirm new enemy turn"] = "Do you really want to start an enemy turn?"
  		}
 	
     -- Ajoutez d'autres langues ici...
