@@ -27,11 +27,14 @@ function rollDice(dice)
     end
 end
 
+
+
 -- Création du bouton de minimap
-local icon = LibStub("LibDBIcon-1.0")
+
 local f = CreateFrame("Frame")
 f:RegisterEvent("VARIABLES_LOADED")
 f:SetScript("OnEvent", function(self, event)
+local icon = LibStub("LibDBIcon-1.0")
     if type(miniMapDb) ~= "table" then
         miniMapDb = {}
     end
@@ -91,7 +94,7 @@ end)
 -- ATTENTE DU CHARGEMENT DE LA SAUVEGARDE --
 --------------------------------------------
 local f = CreateFrame("Frame")
-local icon = LibStub("LibDBIcon-1.0")
+--local icon = LibStub("LibDBIcon-1.0")
 f:RegisterEvent("VARIABLES_LOADED")
 f:SetScript("OnEvent", function(self, event)
     -- Vérifiez si MySkills est nil, si c'est le cas, initialisez-le à une table vide
