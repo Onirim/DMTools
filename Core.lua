@@ -445,7 +445,7 @@ f:SetScript("OnEvent", function(self, event)
 				displayCostValue = ("(" .. MySkills[i].cost .. ")")
 				displayCost = displayCost .. lastCostRoll .. " " .. displayCostValue
 			end
-			local emoteChatMessage = (L["use the skill"] .. MySkills[i].name .. L[", Roll "] .. displayRoll .. L[", cost "] .. displayCost)
+			local emoteChatMessage = (L["use the skill"] .. MySkills[i].name .. (displayRoll ~= "" and L[", Roll "] or "") .. displayRoll .. (displayCost ~= "" and L[", cost "] or "") .. displayCost)
 			if IsInGroup() or IsInRaid() then
 				if IsInRaid() then
 					channel = "RAID"
@@ -658,7 +658,7 @@ for i = 16, 30 do
 			displayCostValue = ("(" .. MySkills[i].cost .. ")")
 			displayCost = displayCost .. lastCostRoll .. " " .. displayCostValue
 		end
-		local emoteChatMessage = (L["use the skill"] .. MySkills[i].name .. L[", Roll "] .. displayRoll .. L[", cost "] .. displayCost)
+		local emoteChatMessage = (L["use the skill"] .. MySkills[i].name .. (displayRoll ~= "" and L[", Roll "] or "") .. displayRoll .. (displayCost ~= "" and L[", cost "] or "") .. displayCost)
 		if IsInGroup() or IsInRaid() then
 			if IsInRaid() then
 				channel = "RAID"
@@ -871,7 +871,7 @@ for i = 31, 45 do
 			displayCostValue = ("(" .. MySkills[i].cost .. ")")
 			displayCost = displayCost .. lastCostRoll .. " " .. displayCostValue
 		end
-		local emoteChatMessage = (L["use the skill"] .. MySkills[i].name .. L[", Roll "] .. displayRoll .. L[", cost "] .. displayCost)
+		local emoteChatMessage = (L["use the skill"] .. MySkills[i].name .. (displayRoll ~= "" and L[", Roll "] or "") .. displayRoll .. (displayCost ~= "" and L[", cost "] or "") .. displayCost)
 		if IsInGroup() or IsInRaid() then
 			if IsInRaid() then
 				channel = "RAID"
@@ -1226,7 +1226,9 @@ end
 			if status then
 				playerName =  AddOn_TotalRP3.Player.GetCurrentUser():GetFirstName()
 			end
-		C_ChatInfo.SendAddonMessage("SkillSheet", "HELLO@" .. playerName .. "@" .. "@" .. "@" .. "@" .. "@" .. "@" .. healthValue .. "@" .. ressourceValue, channel)
+			if not IsInInstance() then
+				C_ChatInfo.SendAddonMessage("SkillSheet", "HELLO@" .. playerName .. "@" .. "@" .. "@" .. "@" .. "@" .. "@" .. healthValue .. "@" .. ressourceValue, channel)
+			end
 	end
 
 	-- Fonctions de gestion des tours joueur
