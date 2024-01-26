@@ -42,7 +42,9 @@ L["frFR"] = {
 	["No"] = "Non",
 	["has started a new turn"] = " a démarré un nouveau tour pour les joueurs !",
 	["has started a new enemy turn"] = " a démarré un nouveau tour ennemi !",
-	["Confirm new enemy turn"] = "Voulez-vous vraiment démarrer un nouveau tour ennemi ?"
+	["Confirm new enemy turn"] = "Voulez-vous vraiment démarrer un nouveau tour ennemi ?",
+	["Output Channel"] = "Canal de sortie",
+	["You need to be leader or assist"] = "Vous devez être chef de groupe/raid ou assistant de raid pour lancer un nouveau tour."
 		}
 	
 L["enUS"] = {
@@ -83,7 +85,9 @@ L["enUS"] = {
 	["No"] = "No",
 	["has started a new turn"] = " has started a new player turn!",
 	["has started a new enemy turn"] = "has started a new enemy turn!",
-	["Confirm new enemy turn"] = "Do you really want to start an enemy turn?"
+	["Confirm new enemy turn"] = "Do you really want to start an enemy turn?",
+	["Output Channel"] = "Output Channel", 
+	["You need to be leader or assist"] = "You need to be a party/raid leader or a raid assist for launch a new turn."
  		}
 	
     -- Ajoutez d'autres langues ici...

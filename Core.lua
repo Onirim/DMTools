@@ -80,6 +80,7 @@ local lastCostValue = ""
 local lastHealthValue = ""
 local lastRessourceValue = ""
 local nameColors = {}
+local outputChannel = "SKILLSHEET"
 
 ----------------------------
 --   MESSAGE D'ACCUEIL    --
@@ -144,6 +145,47 @@ f:SetScript("OnEvent", function(self, event)
 	SkillFrame.Inset:Hide()
 	SkillFrame:Hide() -- A réactiver en PROD
 
+	-- Création du menu déroulant d'output
+	local dropDownOutput = CreateFrame("Frame", "MyDropDownMenu", SkillFrame, "UIDropDownMenuTemplate")
+	dropDownOutput:SetPoint("TOPLEFT", SkillFrame, "TOPLEFT", 315, -83)
+	-- Liste des options du menu déroulant
+	local items = {
+		"SkillSheet",
+		"Raid",
+		"Party",
+		"Emote",
+		"Self"
+	}
+
+	-- Fonction pour gérer le changement de sélection
+	local function OnClick(self)
+		UIDropDownMenu_SetSelectedID(dropDownOutput, self:GetID())
+		outputChannel = string.upper(self:GetText())
+	end
+	
+	-- Fonction pour initialiser le menu déroulant
+	local function initialize(self, level)
+		local info = UIDropDownMenu_CreateInfo()
+		for k,v in pairs(items) do
+			info = UIDropDownMenu_CreateInfo()
+			info.text = v
+			info.value = v
+			info.func = OnClick
+			UIDropDownMenu_AddButton(info, level)
+		end
+	end
+	-- Configuration du menu déroulant
+	UIDropDownMenu_Initialize(dropDownOutput, initialize)
+	UIDropDownMenu_SetWidth(dropDownOutput, 100);
+	UIDropDownMenu_SetButtonWidth(dropDownOutput, 124)
+	UIDropDownMenu_SetSelectedID(dropDownOutput, 1)
+	UIDropDownMenu_JustifyText(dropDownOutput, "LEFT")
+	-- Création du libellé du menu déroulant de sortie
+	local outputLib = SkillFrame:CreateFontString(nil, "OVERLAY")
+	outputLib:SetFontObject("GameFontNormal")
+	outputLib:SetPoint("TOPLEFT", SkillFrame, "TOPLEFT", 335, -68)
+	outputLib:SetText(L["Output Channel"])
+
 
 	-- Création des entête de compétence du volet principal
 	local tableHeaders = SkillFrame:CreateFontString(nil, "OVERLAY")
@@ -207,10 +249,11 @@ f:SetScript("OnEvent", function(self, event)
 	-- Création de la table d'affichage des noms
 	local displayTableName = SkillFrameGM:CreateFontString(nil, "OVERLAY")
 	displayTableName:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
-	displayTableName:SetPoint("TOP", SkillFrameGM, "BOTTOM", -285, 455)
+	displayTableName:SetPoint("TOP", SkillFrameGM, "BOTTOM", -222, 455)
 	displayTableName:SetJustifyH("LEFT")
 	displayTableName:SetJustifyV("TOP")
 	displayTableName:SetText("")
+	displayTableName:SetWidth(200)
 	-- Création de la table d'affichage des compétences
 	local displayTableSkillName = SkillFrameGM:CreateFontString(nil, "OVERLAY")
 	displayTableSkillName:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
@@ -218,6 +261,7 @@ f:SetScript("OnEvent", function(self, event)
 	displayTableSkillName:SetJustifyH("CENTER")
 	displayTableSkillName:SetJustifyV("TOP")
 	displayTableSkillName:SetText("")
+	displayTableSkillName:SetWidth(300)
 	-- Création de la table d'affichage du jet + valeur
 	local displayTableRoll = SkillFrameGM:CreateFontString(nil, "OVERLAY")
 	displayTableRoll:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
@@ -225,6 +269,7 @@ f:SetScript("OnEvent", function(self, event)
 	displayTableRoll:SetJustifyH("CENTER")
 	displayTableRoll:SetJustifyV("TOP")
 	displayTableRoll:SetText("")
+	displayTableRoll:SetWidth(150)
 	-- Création de la table d'affichage des jets de ressources
 	local displayTableRessource = SkillFrameGM:CreateFontString(nil, "OVERLAY")
 	displayTableRessource:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
@@ -232,6 +277,7 @@ f:SetScript("OnEvent", function(self, event)
 	displayTableRessource:SetJustifyH("CENTER")
 	displayTableRessource:SetJustifyV("TOP")
 	displayTableRessource:SetText("")
+	displayTableRessource:SetWidth(150)
 	-- Création de la table d'affichage de la santé
 	local displayTableHealthValue = SkillFrameGM:CreateFontString(nil, "OVERLAY")
 	displayTableHealthValue:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
@@ -239,13 +285,15 @@ f:SetScript("OnEvent", function(self, event)
 	displayTableHealthValue:SetJustifyH("CENTER")
 	displayTableHealthValue:SetJustifyV("TOP")
 	displayTableHealthValue:SetText("")
+	displayTableHealthValue:SetWidth(100)
 	-- Création de la table d'affichage de la ressource
 	local displayTableRessourceValue = SkillFrameGM:CreateFontString(nil, "OVERLAY")
 	displayTableRessourceValue:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
 	displayTableRessourceValue:SetPoint("TOP", SkillFrameGM, "BOTTOM", 280, 455)
 	displayTableRessourceValue:SetJustifyH("CENTER")
 	displayTableRessourceValue:SetJustifyV("TOP")
-	displayTableRessourceValue:SetText("")	
+	displayTableRessourceValue:SetText("")
+	displayTableRessourceValue:SetWidth(100)
 
 	-- Mise à jour de la table
 	
@@ -318,6 +366,11 @@ f:SetScript("OnEvent", function(self, event)
 					playerName =  AddOn_TotalRP3.Player.GetCurrentUser():GetFirstName()
 				end
 			C_ChatInfo.SendAddonMessage("SkillSheet", "TURN@" .. playerName .. "@" .. "@" .. "@" .. "@" .. "@" .. "@" .. "@", channel)
+			if outputChannel ~= "SKILLSHEET" and outputChannel ~= "RAID" and outputChannel ~= "SELF" then
+				SendChatMessage(L["has started a new turn"], outputChannel )
+			elseif outputChannel == "RAID" then
+				SendChatMessage(L["has started a new turn"], "RAID_WARNING")
+			end
 			confirmNewTurn:Hide()
 	end)
 
@@ -335,7 +388,11 @@ f:SetScript("OnEvent", function(self, event)
 	newTurnButton:SetSize(110, 25)
 	newTurnButton:SetText(L["Player Turn"])
 	newTurnButton:SetScript("OnClick", function()
-		confirmNewTurn:Show()
+		if UnitIsGroupLeader("player") or UnitIsGroupAssistant("player") then
+			confirmNewTurn:Show()
+		else
+			print(L["You need to be leader or assist"])
+		end
 	end)
 
 	-- Création de la boîte de dialogue de confirmation de nouveau tour ennemi
@@ -365,6 +422,11 @@ f:SetScript("OnEvent", function(self, event)
 					playerName =  AddOn_TotalRP3.Player.GetCurrentUser():GetFirstName()
 				end
 			C_ChatInfo.SendAddonMessage("SkillSheet", "ENEMY@" .. playerName .. "@" .. "@" .. "@" .. "@" .. "@" .. "@" .. "@", channel)
+			if outputChannel ~= "SKILLSHEET" and outputChannel ~= "RAID" and outputChannel ~= "SELF" then
+				SendChatMessage(L["has started a new enemy turn"], outputChannel )
+			elseif outputChannel == "RAID" then
+				SendChatMessage(L["has started a new enemy turn"], "RAID_WARNING")
+			end
 			confirmNewEnemyTurn:Hide()
 	end)
 
@@ -382,7 +444,11 @@ f:SetScript("OnEvent", function(self, event)
 	newEnemyTurnButton:SetSize(110, 25)
 	newEnemyTurnButton:SetText(L["Enemy Turn"])
 	newEnemyTurnButton:SetScript("OnClick", function()
-		confirmNewEnemyTurn:Show()
+		if UnitIsGroupLeader("player") or UnitIsGroupAssistant("player") then
+			confirmNewEnemyTurn:Show()
+		else
+			print(L["You need to be leader or assist"])
+		end
 	end)
 
 ----------------------------------
@@ -454,8 +520,11 @@ f:SetScript("OnEvent", function(self, event)
 					channel = "RAID"
 				end
 				C_ChatInfo.SendAddonMessage("SkillSheet", "EMOTE@" .. playerName .. " " .. emoteChatMessage .. "@" .. "@" .. "@" .. "@" .. "@", channel)
-			else
-				SendChatMessage(emoteChatMessage, "EMOTE" )
+			end
+			if outputChannel ~= "SKILLSHEET" and outputChannel ~= "SELF" then
+				SendChatMessage(emoteChatMessage, outputChannel )
+			elseif outputChannel == "SELF" then
+				print(playerName .. " " .. emoteChatMessage)
 			end
 		end)
 		if MySkills[i].name == "" then
@@ -667,8 +736,11 @@ for i = 16, 30 do
 				channel = "RAID"
 			end
 			C_ChatInfo.SendAddonMessage("SkillSheet", "EMOTE@" .. playerName .. " " .. emoteChatMessage .. "@" .. "@" .. "@" .. "@" .. "@", channel)
-		else
-			SendChatMessage(emoteChatMessage, "EMOTE" )
+		end
+		if outputChannel ~= "SKILLSHEET" and outputChannel ~= "SELF" then
+			SendChatMessage(emoteChatMessage, outputChannel )
+		elseif outputChannel == "SELF" then
+			print(playerName .. " " .. emoteChatMessage)
 		end
 	end)
 	if MySkills[i].name == "" then
@@ -880,8 +952,11 @@ for i = 31, 45 do
 				channel = "RAID"
 			end
 			C_ChatInfo.SendAddonMessage("SkillSheet", "EMOTE@" .. playerName .. " " .. emoteChatMessage .. "@" .. "@" .. "@" .. "@" .. "@", channel)
-		else
-			SendChatMessage(emoteChatMessage, "EMOTE" )
+		end
+		if outputChannel ~= "SKILLSHEET" and outputChannel ~= "SELF" then
+			SendChatMessage(emoteChatMessage, outputChannel )
+		elseif outputChannel == "SELF" then
+			print(playerName .. " " .. emoteChatMessage)
 		end
 	end)
 	if MySkills[i].name == "" then
@@ -1241,7 +1316,9 @@ end
 			nameColors[name] = "|cFFff4500" -- Rouge
 		end
 		PlaySound(8959)
-		print("|cffffff00" .. name .. L["has started a new turn"])
+		if outputChannel == "SKILLSHEET" then
+			print("|cffffff00" .. name .. L["has started a new turn"])
+		end
 		newTurnButton:Disable()
 		newEnemyTurnButton:Enable()
 		updateDisplayTable() -- Met à jour la table
@@ -1254,7 +1331,9 @@ end
 			nameColors[name] = "|cffffff00" -- Jaune
 		end
 		PlaySound(8959)
-		print("|cffffff00" .. name .. L["has started a new enemy turn"])
+		if outputChannel == "SKILLSHEET" then
+			print("|cffffff00" .. name .. L["has started a new enemy turn"])
+		end
 		newTurnButton:Enable()
 		newEnemyTurnButton:Disable()
 		updateDisplayTable() -- Met à jour la table
@@ -1292,7 +1371,7 @@ end
 				onHelloMessage(name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue)
 			elseif action == "SYNC" then
 				onSyncMessage(name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue)
-			elseif action == "EMOTE" then
+			elseif action == "EMOTE" and outputChannel == "SKILLSHEET" then
 				print("|cffffff00" .. name) -- affiche la notification du jet
 			elseif action == "TURN" then
 				newTurn(name)
