@@ -37,14 +37,19 @@ L["frFR"] = {
 	["Delete"] = "Supprimer",
 	["Player Turn"] = "Tour joueur",
 	["Enemy Turn"] = "Tour ennemi",
+	["Free Turn"] = "Tour libre",
 	["Confirm new turn"] = "Voulez-vous vraiment démarrer un nouveau tour joueur ?",
 	["Yes"] = "Oui",
 	["No"] = "Non",
 	["has started a new turn"] = " a démarré un nouveau tour pour les joueurs !",
 	["has started a new enemy turn"] = " a démarré un nouveau tour ennemi !",
+	["has started a new free turn"] = " a démarré un nouveau tour libre !",
 	["Confirm new enemy turn"] = "Voulez-vous vraiment démarrer un nouveau tour ennemi ?",
+	["Confirm new free turn"] = "Voulez-vous vraiment démarrer un nouveau tour libre ?",
 	["Output Channel"] = "Canal de sortie",
-	["You need to be leader or assist"] = "Vous devez être chef de groupe/raid ou assistant de raid pour lancer un nouveau tour."
+	["You need to be leader or assist"] = "Vous devez être chef de groupe/raid ou assistant de raid pour lancer un nouveau tour.",
+	["Category?"] = "Catégorie ?",
+	["Category? Tooltip"] = "Si la case est cochée, le nom de compétence servira de séparateur de catégorie.",
 		}
 	
 L["enUS"] = {
@@ -80,14 +85,19 @@ L["enUS"] = {
 	["Delete"] = "Delete",
 	["Player Turn"] = "Player Turn",
 	["Enemy Turn"] = "Enemy Turn",
+	["Free Turn"] = "Free Turn",
 	["Confirm new turn"] = "Do you really want to start a new player turn?",
 	["Yes"] = "Yes",
 	["No"] = "No",
 	["has started a new turn"] = " has started a new player turn!",
 	["has started a new enemy turn"] = "has started a new enemy turn!",
+	["has started a new free turn"] = "has started a new free turn!",
 	["Confirm new enemy turn"] = "Do you really want to start an enemy turn?",
+	["Confirm new enemy turn"] = "Do you really want to start an free turn?",
 	["Output Channel"] = "Output Channel", 
-	["You need to be leader or assist"] = "You need to be a party/raid leader or a raid assist for launch a new turn."
+	["You need to be leader or assist"] = "You need to be a party/raid leader or a raid assist for launch a new turn.",
+	["Category?"] = "Category?",
+	["Category? Tooltip"] = "If checked, the skill name will be used as a category skill separator."
  		}
 	
     -- Ajoutez d'autres langues ici...

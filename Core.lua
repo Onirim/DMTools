@@ -102,7 +102,7 @@ f:SetScript("OnEvent", function(self, event)
     if MySkills == nil then
         MySkills = {}
 		for i = 1, 45 do
-		table.insert(MySkills, {id = i, name = "", roll = "", cost = "", description = ""})
+		table.insert(MySkills, {id = i, name = "", roll = "", cost = "", description = "", isCategory = false})
 		end
 		-- Définir les valeurs par défaut pour la première compétence
         MySkills[1].name = L["First Skill"]
@@ -123,6 +123,15 @@ f:SetScript("OnEvent", function(self, event)
 	end
 	if ressourceValue == nil then
 		ressourceValue = "10/10"
+	end
+	------------------------
+	-- RETROCOMPATIBILITE --
+	------------------------
+	for i = 1 , 45 do
+		-- Si le champ isCategory n'existe pas, initialisez-le à false
+		if MySkills[i].isCategory == nil then
+			MySkills[i].isCategory = false
+		end
 	end
 	
 
@@ -185,7 +194,6 @@ f:SetScript("OnEvent", function(self, event)
 	outputLib:SetFontObject("GameFontNormal")
 	outputLib:SetPoint("TOPLEFT", SkillFrame, "TOPLEFT", 335, -68)
 	outputLib:SetText(L["Output Channel"])
-
 
 	-- Création des entête de compétence du volet principal
 	local tableHeaders = SkillFrame:CreateFontString(nil, "OVERLAY")
@@ -382,7 +390,7 @@ f:SetScript("OnEvent", function(self, event)
 		confirmNewTurn:Hide()
 	end)
 
-	-- Création du bouton de nouveau tour
+	-- Création du bouton de nouveau tour joueur
 	local newTurnButton = CreateFrame("Button", nil, SkillFrameGM, "GameMenuButtonTemplate")
 	newTurnButton:SetPoint("TOPLEFT", 440, -30)
 	newTurnButton:SetSize(110, 25)
@@ -440,7 +448,7 @@ f:SetScript("OnEvent", function(self, event)
 
 	-- Création du bouton de nouveau tour ennemi
 	local newEnemyTurnButton = CreateFrame("Button", nil, SkillFrameGM, "GameMenuButtonTemplate")
-	newEnemyTurnButton:SetPoint("TOPLEFT", 440, -60)
+	newEnemyTurnButton:SetPoint("TOPLEFT", 440, -55)
 	newEnemyTurnButton:SetSize(110, 25)
 	newEnemyTurnButton:SetText(L["Enemy Turn"])
 	newEnemyTurnButton:SetScript("OnClick", function()
@@ -450,6 +458,64 @@ f:SetScript("OnEvent", function(self, event)
 			print(L["You need to be leader or assist"])
 		end
 	end)
+
+	-- Création de la boîte de dialogue de confirmation de nouveau tour libre
+	local confirmNewFreeTurn = CreateFrame("Frame", "confirmNewFreeTurn", SkillFrameGM, "ButtonFrameTemplate")
+	ButtonFrameTemplate_HideButtonBar(confirmNewFreeTurn)
+	ButtonFrameTemplate_HidePortrait(confirmNewFreeTurn)
+	confirmNewFreeTurn.Inset:Hide() 
+	confirmNewFreeTurn:SetSize(400, 100)
+	confirmNewFreeTurn:SetPoint("CENTER", SkillFrameGM, "CENTER", 300, -55)
+	confirmNewFreeTurn:Hide()
+	confirmNewFreeTurn:SetFrameStrata("HIGH")
+
+	local confirmNewFreeTurnText = confirmNewFreeTurn:CreateFontString(nil, "OVERLAY")
+	confirmNewFreeTurnText:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
+	confirmNewFreeTurnText:SetPoint("CENTER")
+	confirmNewFreeTurnText:SetText(L["Confirm new free turn"])
+
+	local yesNewFreeTurn = CreateFrame("Button", nil, confirmNewFreeTurn, "GameMenuButtonTemplate")
+	yesNewFreeTurn:SetPoint("BOTTOMLEFT", confirmNewFreeTurn, "BOTTOM", 10, 10)
+	yesNewFreeTurn:SetSize(80, 25)
+	yesNewFreeTurn:SetText(L["Yes"])
+	yesNewFreeTurn:SetScript("OnClick", function()
+		local playerName = UnitName("player") -- Obtient le nom du joueur
+			local status, result = pcall(function() return
+				AddOn_TotalRP3.Player.GetCurrentUser():GetFirstName() end)
+				if status then
+					playerName =  AddOn_TotalRP3.Player.GetCurrentUser():GetFirstName()
+				end
+			C_ChatInfo.SendAddonMessage("SkillSheet", "FREE@" .. playerName .. "@" .. "@" .. "@" .. "@" .. "@" .. "@" .. "@", channel)
+			if outputChannel ~= "SKILLSHEET" and outputChannel ~= "RAID" and outputChannel ~= "SELF" then
+				SendChatMessage(L["has started a new free turn"], outputChannel )
+			elseif outputChannel == "RAID" then
+				SendChatMessage(L["has started a new free turn"], "RAID_WARNING")
+			end
+			confirmNewFreeTurn:Hide()
+	end)
+
+	local NoNewFreeTurn = CreateFrame("Button", nil, confirmNewFreeTurn, "GameMenuButtonTemplate")
+	NoNewFreeTurn:SetPoint("BOTTOMRIGHT", confirmNewFreeTurn, "BOTTOM", -10, 10)
+	NoNewFreeTurn:SetSize(80, 25)
+	NoNewFreeTurn:SetText(L["No"])
+	NoNewFreeTurn:SetScript("OnClick", function()
+		confirmNewFreeTurn:Hide()
+	end)
+
+	-- Création du bouton de nouveau tour libre
+	local newFreeTurnButton = CreateFrame("Button", nil, SkillFrameGM, "GameMenuButtonTemplate")
+	newFreeTurnButton:SetPoint("TOPLEFT", 440, -80)
+	newFreeTurnButton:SetSize(110, 25)
+	newFreeTurnButton:SetText(L["Free Turn"])
+	newFreeTurnButton:Disable()
+	newFreeTurnButton:SetScript("OnClick", function()
+		if UnitIsGroupLeader("player") or UnitIsGroupAssistant("player") then
+			confirmNewFreeTurn:Show()
+		else
+			print(L["You need to be leader or assist"])
+		end
+	end)	
+
 
 ----------------------------------
 -- Liste des compétences page 1 --
@@ -461,8 +527,14 @@ f:SetScript("OnEvent", function(self, event)
 		local skillName = SkillFramePage1:CreateFontString(nil, "OVERLAY")
 		skillName:SetFontObject("GameFontNormal")
 		skillName:SetPoint("TOPLEFT", 10, -30 * i - 120)
-		skillName:SetText("|cFFFFFFFF" .. MySkills[i].name)
-	
+		if MySkills[i].isCategory == true then
+			skillName:SetText("|cFFCAA94B" .. string.upper(MySkills[i].name))
+			skillName:SetFontObject("GameFontNormalLarge")
+		else 
+			skillName:SetText("|cFFFFFFFF" .. MySkills[i].name)
+			skillName:SetFontObject("GameFontNormal")
+		end
+			
 		-- Valeur du dé
 		local diceValue = SkillFramePage1:CreateFontString(nil, "OVERLAY")
 		diceValue:SetFontObject("GameFontNormal")
@@ -527,7 +599,7 @@ f:SetScript("OnEvent", function(self, event)
 				print(playerName .. " " .. emoteChatMessage)
 			end
 		end)
-		if MySkills[i].name == "" then
+		if MySkills[i].name == "" or MySkills[i].isCategory == true then
 			rollButton:Hide()
 		end
 		
@@ -616,6 +688,23 @@ f:SetScript("OnEvent", function(self, event)
 				skillDescriptionBox:SetPoint("TOPLEFT", 15, -105)
 				skillDescriptionBox:SetAutoFocus(false)
 				skillDescriptionBox:SetText(MySkills[i].description)
+				-- Coche Catégorie
+				local categoryCheckButton = CreateFrame("CheckButton", "categoryCheckButton", editFrame, "ChatConfigCheckButtonTemplate")
+				categoryCheckButton:SetPoint("TOPLEFT", 369, -75)
+				categoryCheckButton:SetChecked(MySkills[i].isCategory)
+				categoryCheckButton.tooltip = L["Category? Tooltip"]
+				local categoryCheckText = editFrame:CreateFontString(nil, "OVERLAY")
+				categoryCheckText:SetFontObject("GameFontNormal")
+				categoryCheckText:SetPoint("TOPLEFT", 292, -80)
+				categoryCheckText:SetText(L["Category?"])
+				local isCategoryCheck = MySkills[i].isCategory
+				categoryCheckButton:SetScript("OnClick", function(self)
+					if self:GetChecked() then
+						isCategoryCheck = true
+					else
+						isCategoryCheck = false
+					end
+				end)
 				-- Bouton "Enregistrer"
 				local saveButton = CreateFrame("Button", nil, editFrame, "GameMenuButtonTemplate")
 				saveButton:SetPoint("TOPLEFT", 214, -300)
@@ -632,13 +721,20 @@ f:SetScript("OnEvent", function(self, event)
 					MySkills[i].roll = diceValueText
 					MySkills[i].cost = costValueText
 					MySkills[i].description = descriptionValueText
+					MySkills[i].isCategory = isCategoryCheck
 					skillName:SetText("|cFFFFFFFF" .. MySkills[i].name)
 					diceValue:SetText("|cFFFFFFFF" .. MySkills[i].roll)
 					costValue:SetText("|cFFFFFFFF" .. MySkills[i].cost)
-					if MySkills[i].name == "" then
+					if MySkills[i].name == "" or MySkills[i].isCategory == true then
 						rollButton:Hide()
 						else 
 						rollButton:Show()
+					end
+					if MySkills[i].isCategory == true then
+						skillName:SetText("|cFFCAA94B" .. string.upper(MySkills[i].name))
+						skillName:SetFontObject("GameFontNormalLarge")
+					else 
+						skillName:SetFontObject("GameFontNormal")
 					end
 				editFrame:Hide()
 				end)
@@ -652,14 +748,10 @@ f:SetScript("OnEvent", function(self, event)
 					MySkills[i].roll = ""
 					MySkills[i].cost = ""
 					MySkills[i].description = ""
+					MySkills[i].isCategory = false
 					skillName:SetText("|cFFFFFFFF" .. MySkills[i].name)
 					diceValue:SetText("|cFFFFFFFF" .. MySkills[i].roll)
 					costValue:SetText("|cFFFFFFFF" .. MySkills[i].cost)
-					if MySkills[i].name == "" then
-						rollButton:Hide()
-						else 
-						rollButton:Show()
-					end
 				editFrame:Hide()
 				end)
 			end
@@ -677,7 +769,13 @@ for i = 16, 30 do
 	local skillName = SkillFramePage2:CreateFontString(nil, "OVERLAY")
 	skillName:SetFontObject("GameFontNormal")
 	skillName:SetPoint("TOPLEFT", 10, -30 * j - 120)
-	skillName:SetText("|cFFFFFFFF" .. MySkills[i].name)
+	if MySkills[i].isCategory == true then
+		skillName:SetText("|cFFCAA94B" .. string.upper(MySkills[i].name))
+		skillName:SetFontObject("GameFontNormalLarge")
+	else 
+		skillName:SetText("|cFFFFFFFF" .. MySkills[i].name)
+		skillName:SetFontObject("GameFontNormal")
+	end
 
 	-- Valeur du dé
 	local diceValue = SkillFramePage2:CreateFontString(nil, "OVERLAY")
@@ -743,7 +841,7 @@ for i = 16, 30 do
 			print(playerName .. " " .. emoteChatMessage)
 		end
 	end)
-	if MySkills[i].name == "" then
+	if MySkills[i].name == "" or MySkills[i].isCategory == true then
 		rollButton:Hide()
 	end
 	
@@ -832,6 +930,23 @@ for i = 16, 30 do
 			skillDescriptionBox:SetPoint("TOPLEFT", 15, -105)
 			skillDescriptionBox:SetAutoFocus(false)
 			skillDescriptionBox:SetText(MySkills[i].description)
+			-- Coche Catégorie
+			local categoryCheckButton = CreateFrame("CheckButton", "categoryCheckButton", editFrame, "ChatConfigCheckButtonTemplate")
+			categoryCheckButton:SetPoint("TOPLEFT", 369, -75)
+			categoryCheckButton:SetChecked(MySkills[i].isCategory)
+			categoryCheckButton.tooltip = L["Category? Tooltip"]
+			local categoryCheckText = editFrame:CreateFontString(nil, "OVERLAY")
+			categoryCheckText:SetFontObject("GameFontNormal")
+			categoryCheckText:SetPoint("TOPLEFT", 292, -80)
+			categoryCheckText:SetText(L["Category?"])
+			local isCategoryCheck = MySkills[i].isCategory
+			categoryCheckButton:SetScript("OnClick", function(self)
+				if self:GetChecked() then
+					isCategoryCheck = true
+				else
+					isCategoryCheck = false
+				end
+			end)
 			-- Bouton "Enregistrer"
 			local saveButton = CreateFrame("Button", nil, editFrame, "GameMenuButtonTemplate")
 			saveButton:SetPoint("TOPLEFT", 214, -300)
@@ -848,13 +963,20 @@ for i = 16, 30 do
 				MySkills[i].roll = diceValueText
 				MySkills[i].cost = costValueText
 				MySkills[i].description = descriptionValueText
+				MySkills[i].isCategory = isCategoryCheck
 				skillName:SetText("|cFFFFFFFF" .. MySkills[i].name)
 				diceValue:SetText("|cFFFFFFFF" .. MySkills[i].roll)
 				costValue:SetText("|cFFFFFFFF" .. MySkills[i].cost)
-				if MySkills[i].name == "" then
+				if MySkills[i].name == "" or MySkills[i].isCategory == true then
 					rollButton:Hide()
 					else 
 					rollButton:Show()
+				end
+				if MySkills[i].isCategory == true then
+					skillName:SetText("|cFFCAA94B" .. string.upper(MySkills[i].name))
+					skillName:SetFontObject("GameFontNormalLarge")
+				else 
+					skillName:SetFontObject("GameFontNormal")
 				end
 			editFrame:Hide()
 			end)
@@ -868,14 +990,10 @@ for i = 16, 30 do
 				MySkills[i].roll = ""
 				MySkills[i].cost = ""
 				MySkills[i].description = ""
+				MySkills[i].isCategory = false
 				skillName:SetText("|cFFFFFFFF" .. MySkills[i].name)
 				diceValue:SetText("|cFFFFFFFF" .. MySkills[i].roll)
 				costValue:SetText("|cFFFFFFFF" .. MySkills[i].cost)
-				if MySkills[i].name == "" then
-					rollButton:Hide()
-					else 
-					rollButton:Show()
-				end
 			editFrame:Hide()
 			end)
 		end
@@ -893,7 +1011,13 @@ for i = 31, 45 do
 	local skillName = SkillFramePage3:CreateFontString(nil, "OVERLAY")
 	skillName:SetFontObject("GameFontNormal")
 	skillName:SetPoint("TOPLEFT", 10, -30 * j - 120)
-	skillName:SetText("|cFFFFFFFF" .. MySkills[i].name)
+	if MySkills[i].isCategory == true then
+		skillName:SetText("|cFFCAA94B" .. string.upper(MySkills[i].name))
+		skillName:SetFontObject("GameFontNormalLarge")
+	else 
+		skillName:SetText("|cFFFFFFFF" .. MySkills[i].name)
+		skillName:SetFontObject("GameFontNormal")
+	end
 
 	-- Valeur du dé
 	local diceValue = SkillFramePage3:CreateFontString(nil, "OVERLAY")
@@ -959,7 +1083,7 @@ for i = 31, 45 do
 			print(playerName .. " " .. emoteChatMessage)
 		end
 	end)
-	if MySkills[i].name == "" then
+	if MySkills[i].name == "" or MySkills[i].isCategory == true then
 		rollButton:Hide()
 	end
 	
@@ -1048,6 +1172,23 @@ for i = 31, 45 do
 			skillDescriptionBox:SetPoint("TOPLEFT", 15, -105)
 			skillDescriptionBox:SetAutoFocus(false)
 			skillDescriptionBox:SetText(MySkills[i].description)
+			-- Coche Catégorie
+			local categoryCheckButton = CreateFrame("CheckButton", "categoryCheckButton", editFrame, "ChatConfigCheckButtonTemplate")
+			categoryCheckButton:SetPoint("TOPLEFT", 369, -75)
+			categoryCheckButton:SetChecked(MySkills[i].isCategory)
+			categoryCheckButton.tooltip = L["Category? Tooltip"]
+			local categoryCheckText = editFrame:CreateFontString(nil, "OVERLAY")
+			categoryCheckText:SetFontObject("GameFontNormal")
+			categoryCheckText:SetPoint("TOPLEFT", 292, -80)
+			categoryCheckText:SetText(L["Category?"])
+			local isCategoryCheck = MySkills[i].isCategory
+			categoryCheckButton:SetScript("OnClick", function(self)
+				if self:GetChecked() then
+					isCategoryCheck = true
+				else
+					isCategoryCheck = false
+				end
+			end)
 			-- Bouton "Enregistrer"
 			local saveButton = CreateFrame("Button", nil, editFrame, "GameMenuButtonTemplate")
 			saveButton:SetPoint("TOPLEFT", 214, -300)
@@ -1064,13 +1205,20 @@ for i = 31, 45 do
 				MySkills[i].roll = diceValueText
 				MySkills[i].cost = costValueText
 				MySkills[i].description = descriptionValueText
+				MySkills[i].isCategory = isCategoryCheck
 				skillName:SetText("|cFFFFFFFF" .. MySkills[i].name)
 				diceValue:SetText("|cFFFFFFFF" .. MySkills[i].roll)
 				costValue:SetText("|cFFFFFFFF" .. MySkills[i].cost)
-				if MySkills[i].name == "" then
+				if MySkills[i].name == "" or MySkills[i].isCategory == true then
 					rollButton:Hide()
 					else 
 					rollButton:Show()
+				end
+				if MySkills[i].isCategory == true then
+					skillName:SetText("|cFFCAA94B" .. string.upper(MySkills[i].name))
+					skillName:SetFontObject("GameFontNormalLarge")
+				else 
+					skillName:SetFontObject("GameFontNormal")
 				end
 			editFrame:Hide()
 			end)
@@ -1084,14 +1232,10 @@ for i = 31, 45 do
 				MySkills[i].roll = ""
 				MySkills[i].cost = ""
 				MySkills[i].description = ""
+				MySkills[i].isCategory = false
 				skillName:SetText("|cFFFFFFFF" .. MySkills[i].name)
 				diceValue:SetText("|cFFFFFFFF" .. MySkills[i].roll)
 				costValue:SetText("|cFFFFFFFF" .. MySkills[i].cost)
-				if MySkills[i].name == "" then
-					rollButton:Hide()
-					else 
-					rollButton:Show()
-				end
 			editFrame:Hide()
 			end)
 		end
@@ -1314,6 +1458,11 @@ end
 		-- Change la couleur de tous les noms en rouge
 		for name, player in pairs(players) do
 			nameColors[name] = "|cFFff4500" -- Rouge
+			player.skillName = ""
+			player.diceRoll = ""
+			player.diceValue = ""
+			player.costRoll = ""
+			player.costValue = ""
 		end
 		PlaySound(8959)
 		if outputChannel == "SKILLSHEET" then
@@ -1321,6 +1470,7 @@ end
 		end
 		newTurnButton:Disable()
 		newEnemyTurnButton:Enable()
+		newFreeTurnButton:Enable()
 		updateDisplayTable() -- Met à jour la table
 	end
 
@@ -1335,7 +1485,24 @@ end
 			print("|cffffff00" .. name .. L["has started a new enemy turn"])
 		end
 		newTurnButton:Enable()
+		newFreeTurnButton:Enable()
 		newEnemyTurnButton:Disable()
+		updateDisplayTable() -- Met à jour la table
+	end
+
+	-- Fonctions de gestion des tours libres
+	local function newFreeTurn(name)
+		-- Change la couleur de tous les noms en vert
+		for name, player in pairs(players) do
+			nameColors[name] = "|cFF52BE80" -- Vert
+		end
+		PlaySound(8959)
+		if outputChannel == "SKILLSHEET" then
+			print("|cffffff00" .. name .. L["has started a new free turn"])
+		end
+		newTurnButton:Enable()
+		newFreeTurnButton:Disable()
+		newEnemyTurnButton:Enable()
 		updateDisplayTable() -- Met à jour la table
 	end
 
@@ -1377,9 +1544,10 @@ end
 				newTurn(name)
 			elseif action == "ENEMY" then
 				newEnemyTurn(name)
+			elseif action == "FREE" then
+				newFreeTurn(name)
 			end
 		end
 	end)
 	
 end)
-

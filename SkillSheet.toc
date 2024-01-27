@@ -1,5 +1,5 @@
 ## Interface: 100205
-## Version: 1.2.0
+## Version: 1.3.0
 ## Title: Skill Sheet
 ## Notes: Character Sheet and dice rolling for roleplayers
 ## Author: Onirim
