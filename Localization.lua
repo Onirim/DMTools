@@ -6,7 +6,9 @@ local L = core.Locales
 
 L["frFR"] = {
 	["SkillSheet is loaded"] = " |cFF808080est chargé. Pour ouvrir le panneau, utilisez la commande /skill ou utilisez le bouton de la minimap.",
-	["Open/Close minimap button"] = "|cFF7cfc00Clic-gauche|r |cFFFFFFFF: Ouvrir/Fermer SkillSheet|r",
+	["SkillSheet Character and GM"] = "SkillSheet : Fiche de personnage et interface MJ",
+	["Open/Close PC panel button"] = "|cFF7cfc00Clic-gauche|r |cFFFFFFFF: Ouvrir/Fermer l'interface principale|r",
+	["Open/Close NPC panel button"] = "|cFF7cfc00Clic-droit|r |cFFFFFFFF: Ouvrir/Fermer l'interface des marqueurs|r",
 	["First Skill"] = "Attaque simple",
 	["First Roll"] = "1d100+10",
 	["First Cost"] = "1d6",
@@ -50,11 +52,21 @@ L["frFR"] = {
 	["You need to be leader or assist"] = "Vous devez être chef de groupe/raid ou assistant de raid pour lancer un nouveau tour.",
 	["Category?"] = "Catégorie ?",
 	["Category? Tooltip"] = "Si la case est cochée, le nom de compétence servira de séparateur de catégorie.",
+	["SkillSheet NPC"] = "SkillSheet : Panneau des marqueurs",
+	["Marker Table Header"] = "Nom                           Puissance    Santé",
+	["Marker Details"] = "Détails du marqueur",
+	["Marker Name"] = "Nom du marqueur",
+	["Marker Power"] = "Puissance",
+	["Marker Description"] = "Description",
+	["Marker Sync?"] = "Activer la synchronisation des marqueurs",
+	["Marker Sync Tooltip"] = "En cochant cette case, vous enverrez vos marqueurs à tous les autres joueurs du groupe, écrasant les leurs s'ils en avaient"
 		}
 	
 L["enUS"] = {
 	["SkillSheet is loaded"] = " |cFF808080is loaded. For opening the interface, use the command /skill",
-	["Open/Close minimap button"] = "|cFF7cfc00Left-click|r |cFFFFFFFF: Open/Close SkillSheet|r",
+	["SkillSheet Character and GM"] = "SkillSheet: character sheet and GM panel",
+	["Open/Close PC panel button"] = "|cFF7cfc00Left-click|r |cFFFFFFFF: Open/Close the main interface|r",
+	["Open/Close NPC panel button"] = "|cFF7cfc00Right-click|r |cFFFFFFFF: Open/Close the markers interface|r",
 	["First Skill"] = "Simple attack",
 	["First Roll"] = "1d100+10",
 	["First Cost"] = "1d6",
@@ -97,7 +109,15 @@ L["enUS"] = {
 	["Output Channel"] = "Output Channel", 
 	["You need to be leader or assist"] = "You need to be a party/raid leader or a raid assist for launch a new turn.",
 	["Category?"] = "Category?",
-	["Category? Tooltip"] = "If checked, the skill name will be used as a category skill separator."
+	["Category? Tooltip"] = "If checked, the skill name will be used as a category skill separator.",
+	["SkillSheet NPC"] = "SkillSheet: markers control panel",
+	["Marker Table Header"] = "Nom         Type        Santé       Niveau",
+	["Marker Details"] = "Marker details",
+	["Marker Name"] = "Marker Name",
+	["Marker Power"] = "Power",
+	["Marker Description"] = "Description",
+	["Marker Sync?"] = "Activate marker syncronization",
+	["Marker Sync Tooltip"] = "If checked, your markers will be sent to other players of the party and override theirs markers"
  		}
 	
     -- Ajoutez d'autres langues ici...

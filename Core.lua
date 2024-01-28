@@ -52,17 +52,24 @@ function SkillSheetCreateMinimapButton()
         OnClick = function(_, button)
             if button == "LeftButton" then
                 if SkillFrame:IsVisible() then
-                SkillFrame:Hide()
+                	SkillFrame:Hide()
                 else
-                SkillFrame:Show()
+                	SkillFrame:Show()
                 end
-            end
+			elseif button == "RightButton" then
+				if MarkerFrame:IsVisible() then
+					MarkerFrame:Hide()
+				else
+					MarkerFrame:Show()
+				end
+			end
         end,
         OnTooltipShow = function(tooltip)
             if not tooltip or not tooltip.AddLine then return end
-            tooltip:AddLine("SkillSheet                                    " .. version)
+            tooltip:AddLine("SkillSheet                                                   " .. version)
             tooltip:AddLine(" ")
-            tooltip:AddLine(L["Open/Close minimap button"])
+            tooltip:AddLine(L["Open/Close PC panel button"])
+			tooltip:AddLine(L["Open/Close NPC panel button"])
         end,
     })
     local minimapIcon = LibStub("LibDBIcon-1.0")
@@ -72,6 +79,7 @@ end
 -----------------------
 -- Variables mémoire --
 -----------------------
+SkillSheetEditIsOpened = false
 local lastSkillName = ""
 local lastDiceRoll = ""
 local lastDiceValue = ""
@@ -81,6 +89,10 @@ local lastHealthValue = ""
 local lastRessourceValue = ""
 local nameColors = {}
 local outputChannel = "SKILLSHEET"
+skillSheetMarkerNames = {}
+skillSheetMarkerPowers = {}
+skillSheetMarkerHealth = {}
+skillSheetMarkerDescription = {}
 
 ----------------------------
 --   MESSAGE D'ACCUEIL    --
@@ -124,6 +136,7 @@ f:SetScript("OnEvent", function(self, event)
 	if ressourceValue == nil then
 		ressourceValue = "10/10"
 	end
+
 	------------------------
 	-- RETROCOMPATIBILITE --
 	------------------------
@@ -141,7 +154,7 @@ f:SetScript("OnEvent", function(self, event)
 
 	-- Création du cadre
 	local SkillFrame = CreateFrame("Frame", "SkillFrame", UIParent, "ButtonFrameTemplate")
-	SkillFrame:SetTitle("SkillSheet")
+	SkillFrame:SetTitle(L["SkillSheet Character and GM"])
 	SkillFrame:SetPortraitToAsset("Interface\\ICONS\\inv_inscription_runescrolloffortitude_yellow")
 	SkillFrame:SetSize(460, 600) -- Largeur, Hauteur
 	SkillFrame:SetPoint("LEFT", 100, 60) -- Position sur l'écran
@@ -603,8 +616,7 @@ f:SetScript("OnEvent", function(self, event)
 			rollButton:Hide()
 		end
 		
-		-- Bouton d'édition
-		SkillSheetEditIsOpened = false
+		-- Bouton d'édition		
 		local editButton = CreateFrame("Button", nil, SkillFramePage1, "GameMenuButtonTemplate")
 		editButton:SetPoint("TOPLEFT", 432, -30 * i - 115)
 		editButton:SetSize(25, 25)
@@ -1508,6 +1520,17 @@ end
 
 	-- Création du ticker
 	local ticker = C_Timer.NewTicker(5, sendInfo)
+
+	local function storeMarkers(id, markerName, markerPower, markerHealth, markerDescription)
+		id = tonumber(id)
+		skillSheetMarkerNames[id]:SetText("|cFFFFFFFF" .. markerName)
+		markers[id].name = markerName
+		skillSheetMarkerPowers[id]:SetText("|cFFFFFFFF" .. markerPower)
+		markers[id].power = markerPower
+		skillSheetMarkerHealth[id]:SetText("|cFFFFFFFF" .. markerHealth)
+		markers[id].health = markerHealth
+		markers[id].description = markerDescription
+    end
 	------------------------
 	--  COMMANDE SYSTEME  --
 	------------------------
@@ -1531,6 +1554,7 @@ end
 	eventFrame:SetScript("OnEvent", function(self, event, prefix, message, channel, sender)
 		if event == "CHAT_MSG_ADDON" and prefix == "SkillSheet" then
 			local action, name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue = strsplit("@", message)
+			local action, id, markerName, markerPower, markerHealth, markerDescription, markerDump = strsplit("@", message)
 			if action == "HELLO" then
 				onHelloMessage(name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue)
 			elseif action == "ROLL" then
@@ -1546,6 +1570,9 @@ end
 				newEnemyTurn(name)
 			elseif action == "FREE" then
 				newFreeTurn(name)
+			elseif action == "MARKERS" then
+				storeMarkers(id, markerName, markerPower, markerHealth, markerDescription)
+				--print(id, markerName, markerPower, markerHealth, markerDescription)
 			end
 		end
 	end)
