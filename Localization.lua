@@ -5,7 +5,7 @@ local L = core.Locales
 
 
 L["frFR"] = {
-	["SkillSheet is loaded"] = " |cFF808080est chargé. Pour ouvrir le panneau, utilisez la commande /skill ou utilisez le bouton de la minimap.",
+	["SkillSheet is loaded"] = " |cFF808080est chargé. Pour ouvrir le panneau, utilisez le bouton de la minimap. Plus d'options en tapant /skillsheet",
 	["SkillSheet Character and GM"] = "SkillSheet : Fiche de personnage et interface MJ",
 	["Open/Close PC panel button"] = "|cFF7cfc00Clic-gauche|r |cFFFFFFFF: Ouvrir/Fermer l'interface principale|r",
 	["Open/Close NPC panel button"] = "|cFF7cfc00Clic-droit|r |cFFFFFFFF: Ouvrir/Fermer l'interface des marqueurs|r",
@@ -61,11 +61,21 @@ L["frFR"] = {
 	["Marker Sync?"] = "Activer la synchronisation des marqueurs",
 	["Marker Sync Tooltip"] = "En cochant cette case, vous enverrez vos marqueurs à tous les autres joueurs du groupe, écrasant les leurs s'ils en avaient",
 	["Keep Secret?"] = "Garder secret",
-	["Keep Secret Tooltip"] = "Si coché, le marqueur ne sera pas envoyé aux joueurs"
+	["Keep Secret Tooltip"] = "Si coché, le marqueur ne sera pas envoyé aux joueurs",
+	["Command Usage"] = "Liste des commandes :",
+	["Export"] = "Exportation de la fiche",
+	["SkillSheet Export"] = "/SkillSheet Export - Fonction d'export de fiche de personnage",
+	["How to export"] = "Entrez ctrl+c pour copier le contenu du cadre",
+	["Skillsheet Reset"] = "/SkillSheet Reset - Supprime toutes les entrées de la fiche de personnage",
+	["Skills deleted"] = "Vos pages de compétences ont été supprimées !",
+	["SkillSheet Import"] = "/SkillSheet Import - Fonction d'import de fiche de personnage",
+	["Import"] = "Importation de la fiche",
+	["How to import"] = "Collez ici les données à importer",
+	["Data Imported"] = "La fiche de personnage a été importée avec succès"
 		}
 	
 L["enUS"] = {
-	["SkillSheet is loaded"] = " |cFF808080is loaded. For opening the interface, use the command /skill",
+	["SkillSheet is loaded"] = " |cFF808080is loaded. For opening the interface, use the command minimap button. You can access to more functions with /skillsheet",
 	["SkillSheet Character and GM"] = "SkillSheet: character sheet and GM panel",
 	["Open/Close PC panel button"] = "|cFF7cfc00Left-click|r |cFFFFFFFF: Open/Close the main interface|r",
 	["Open/Close NPC panel button"] = "|cFF7cfc00Right-click|r |cFFFFFFFF: Open/Close the markers interface|r",
@@ -121,7 +131,17 @@ L["enUS"] = {
 	["Marker Sync?"] = "Activate marker syncronization",
 	["Marker Sync Tooltip"] = "If checked, your markers will be sent to other players of the party and override theirs markers",
 	["Keep Secret?"] = "Keep secret",
-	["Keep Secret Tooltip"] = "If checked, the marker will not be sent to the players"
+	["Keep Secret Tooltip"] = "If checked, the marker will not be sent to the players",
+	["Command Usage"] = "Command usage:",
+	["Export"] = "Character Sheet Export",
+	["SkillSheet Export"] = "/SkillSheet Export - Character Sheet export function",
+	["How to export"] = "Use ctrl+c for copy the data below",
+	["Skillsheet Reset"] = "/SkillSheet Reset - Delete all the character sheet data",
+	["Skills deleted"] = "Your skill pages has been deleted!",
+	["SkillSheet Import"] = "/SkillSheet Import - Character Sheet import function",
+	["Import"] = "Character Sheet Import",
+	["How to import"] = "Past here the data to import",
+	["Data Imported"] = "The character sheet has been imported successfully"
  		}
 	
     -- Ajoutez d'autres langues ici...

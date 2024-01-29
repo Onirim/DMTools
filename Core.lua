@@ -93,6 +93,12 @@ skillSheetMarkerNames = {}
 skillSheetMarkerPowers = {}
 skillSheetMarkerHealth = {}
 skillSheetMarkerDescription = {}
+SkillSheetSkillName = {}
+SkillSheetDiceValue = {}
+SkillSheetCostValue = {}
+SkillSheetRollButton = {}
+SkillSheetNewMySkills = {}
+
 
 ----------------------------
 --   MESSAGE D'ACCUEIL    --
@@ -547,22 +553,26 @@ f:SetScript("OnEvent", function(self, event)
 			skillName:SetText("|cFFFFFFFF" .. MySkills[i].name)
 			skillName:SetFontObject("GameFontNormal")
 		end
+		SkillSheetSkillName[i] = skillName
 			
 		-- Valeur du dé
 		local diceValue = SkillFramePage1:CreateFontString(nil, "OVERLAY")
 		diceValue:SetFontObject("GameFontNormal")
 		diceValue:SetPoint("TOPLEFT", 210, -30 * i - 120)
 		diceValue:SetText("|cFFFFFFFF" .. MySkills[i].roll)
+		SkillSheetDiceValue[i] = diceValue
 		
 		-- Valeur du coût
 		local costValue = SkillFramePage1:CreateFontString(nil, "OVERLAY")
 		costValue:SetFontObject("GameFontNormal")
 		costValue:SetPoint("TOPLEFT", 310, -30 * i - 120)
 		costValue:SetText("|cFFFFFFFF" .. MySkills[i].cost)
+		SkillSheetCostValue[i] = costValue
 	
 		-- Bouton de roll
 		local rollButton = CreateFrame("Button", nil, SkillFramePage1, "GameMenuButtonTemplate")
 		local playerName = UnitName("player") -- Obtient le nom du joueur
+		SkillSheetRollButton[i] = rollButton
 		rollButton:SetPoint("TOPLEFT", 380, -30 * i - 115)
 		rollButton:SetSize(50, 25)
 		rollButton:SetText(L["Roll"])
@@ -788,22 +798,26 @@ for i = 16, 30 do
 		skillName:SetText("|cFFFFFFFF" .. MySkills[i].name)
 		skillName:SetFontObject("GameFontNormal")
 	end
+	SkillSheetSkillName[i] = skillName
 
 	-- Valeur du dé
 	local diceValue = SkillFramePage2:CreateFontString(nil, "OVERLAY")
 	diceValue:SetFontObject("GameFontNormal")
 	diceValue:SetPoint("TOPLEFT", 210, -30 * j - 120)
 	diceValue:SetText("|cFFFFFFFF" .. MySkills[i].roll)
+	SkillSheetDiceValue[i] = diceValue
 	
 	-- Valeur du coût
 	local costValue = SkillFramePage2:CreateFontString(nil, "OVERLAY")
 	costValue:SetFontObject("GameFontNormal")
 	costValue:SetPoint("TOPLEFT", 310, -30 * j - 120)
 	costValue:SetText("|cFFFFFFFF" .. MySkills[i].cost)
+	SkillSheetCostValue[i] = costValue
 
 	-- Bouton de roll
 	local rollButton = CreateFrame("Button", nil, SkillFramePage2, "GameMenuButtonTemplate")
 	local playerName = UnitName("player") -- Obtient le nom du joueur
+	SkillSheetRollButton[i] = rollButton
 	rollButton:SetPoint("TOPLEFT", 380, -30 * j - 115)
 	rollButton:SetSize(50, 25)
 	rollButton:SetText("Roll")
@@ -1030,22 +1044,26 @@ for i = 31, 45 do
 		skillName:SetText("|cFFFFFFFF" .. MySkills[i].name)
 		skillName:SetFontObject("GameFontNormal")
 	end
+	SkillSheetSkillName[i] = skillName
 
 	-- Valeur du dé
 	local diceValue = SkillFramePage3:CreateFontString(nil, "OVERLAY")
 	diceValue:SetFontObject("GameFontNormal")
 	diceValue:SetPoint("TOPLEFT", 210, -30 * j - 120)
 	diceValue:SetText("|cFFFFFFFF" .. MySkills[i].roll)
+	SkillSheetDiceValue[i] = diceValue
 	
 	-- Valeur du coût
 	local costValue = SkillFramePage3:CreateFontString(nil, "OVERLAY")
 	costValue:SetFontObject("GameFontNormal")
 	costValue:SetPoint("TOPLEFT", 310, -30 * j - 120)
 	costValue:SetText("|cFFFFFFFF" .. MySkills[i].cost)
+	SkillSheetCostValue[i] = costValue
 
 	-- Bouton de roll
 	local rollButton = CreateFrame("Button", nil, SkillFramePage3, "GameMenuButtonTemplate")
 	local playerName = UnitName("player") -- Obtient le nom du joueur
+	SkillSheetRollButton[i] = rollButton
 	rollButton:SetPoint("TOPLEFT", 380, -30 * j - 115)
 	rollButton:SetSize(50, 25)
 	rollButton:SetText("Roll")
@@ -1549,9 +1567,29 @@ end
 	------------------------
 
 	-- Commande pour afficher la fenêtre
-	SLASH_SKILLSHEET1 = "/skill"
+	SLASH_SKILLSHEET1 = "/skillsheet"
 	SlashCmdList["SKILLSHEET"] = function(msg)
-		SkillFrame:Show()
+		if msg == "" then
+			-- Aucun argument fourni, afficher le texte d'aide
+			print(L["Command Usage"])
+			--print("/skillsheet character - Explication de la commande character")
+			--print("/skillsheet markers - Explication de la commande markers")
+			print(L["SkillSheet Export"])
+			print(L["SkillSheet Import"])
+			print(L["Skillsheet Reset"])
+		elseif string.lower(msg) == "character" then
+			-- Gérer la commande character
+		elseif string.lower(msg) == "markers" then
+			-- Gérer la commande markers
+		elseif string.lower(msg) == "export" then
+			SkillSheetExportData(MySkills)
+		elseif string.lower(msg) == "import" then
+			SkillSheetImportData(MySkills)
+		elseif string.lower(msg) == "reset" then
+			SkillSheetReset(MySkills)
+		else
+			print("Commande inconnue. Tapez /skillsheet pour l'aide.")
+		end
 	end
 
 	------------------------------
