@@ -3,6 +3,12 @@ local _, core = ...
 local L = core.Locales[GetLocale()] or core.Locales["enUS"]
 local version = GetAddOnMetadata("SkillSheet", "Version")
 
+local markerSync = false
+local colorWhite = "|cFFFFFFFF"
+local colorGrey = "|cFF7C7C7C"
+
+
+
 --------------------------------------------
 -- ATTENTE DU CHARGEMENT DE LA SAUVEGARDE --
 --------------------------------------------
@@ -12,7 +18,17 @@ f:SetScript("OnEvent", function(self, event)
 	if markers == nil then
 		markers = {}
 		for i = 1, 8 do
-			table.insert(markers, {name = "", power = "", health = "", description = ""})
+			table.insert(markers, {name = "", power = "", health = "", description = "", hidden = true})
+		end
+	end
+
+    ------------------------
+	-- RETROCOMPATIBILITE --
+	------------------------
+	for i = 1 , 8 do
+		-- Si le champ hidden n'existe pas, initialisez-le à false
+		if markers[i].hidden == nil then
+			markers[i].hidden = true
 		end
 	end
 
@@ -64,6 +80,7 @@ f:SetScript("OnEvent", function(self, event)
             if button == "LeftButton" then
                 ChatFrame1EditBox:Insert("{rt" .. i .. "}")
                 ChatFrame1EditBox:Show()
+                ChatFrame1EditBox:SetFocus()
             end
         end)
         
@@ -71,7 +88,7 @@ f:SetScript("OnEvent", function(self, event)
         local MarkerName = MarkerFrame:CreateFontString(nil, "OVERLAY")
         MarkerName:SetFontObject("GameFontNormal")
         MarkerName:SetPoint("TOPLEFT", 50, -40 * i - 30)
-        MarkerName:SetText("|cFFFFFFFF" .. markers[i].name)
+        MarkerName:SetText((markers[i].hidden and colorGrey or colorWhite) .. markers[i].name)
         MarkerName:SetFontObject("GameFontNormal")
         skillSheetMarkerNames[i] = MarkerName
 
@@ -79,7 +96,7 @@ f:SetScript("OnEvent", function(self, event)
         local MarkerPower = MarkerFrame:CreateFontString(nil, "OVERLAY")
         MarkerPower:SetFontObject("GameFontNormal")
         MarkerPower:SetPoint("TOPLEFT", 205, -40 * i - 30)
-        MarkerPower:SetText("|cFFFFFFFF" .. markers[i].power)
+        MarkerPower:SetText((markers[i].hidden and colorGrey or colorWhite) .. markers[i].power)
         MarkerPower:SetFontObject("GameFontNormal")
         skillSheetMarkerPowers[i] = MarkerPower
 
@@ -87,7 +104,7 @@ f:SetScript("OnEvent", function(self, event)
         local MarkerHealth = MarkerFrame:CreateFontString(nil, "OVERLAY")
         MarkerHealth:SetFontObject("GameFontNormal")
         MarkerHealth:SetPoint("TOPLEFT", 280, -40 * i - 30)
-        MarkerHealth:SetText("|cFFFFFFFF" .. markers[i].health)
+        MarkerHealth:SetText((markers[i].hidden and colorGrey or colorWhite) .. markers[i].health)
         MarkerHealth:SetFontObject("GameFontNormal")
         skillSheetMarkerHealth[i] = MarkerHealth
 
@@ -183,7 +200,28 @@ f:SetScript("OnEvent", function(self, event)
 				markerDescriptionBox:SetPoint("TOPLEFT", 15, -105)
 				markerDescriptionBox:SetAutoFocus(false)
 				markerDescriptionBox:SetText(markers[i].description)
+                -- Coche garder secret
+				local secretCheckButton = CreateFrame("CheckButton", "secretCheckButton", editFrame, "ChatConfigCheckButtonTemplate")
+				secretCheckButton:SetPoint("TOPLEFT", 369, -75)
+				secretCheckButton:SetChecked(markers[i].hidden)
+				secretCheckButton.tooltip = L["Keep Secret Tooltip"]
+				local secretCheckText = editFrame:CreateFontString(nil, "OVERLAY")
+				secretCheckText:SetFontObject("GameFontNormal")
+				secretCheckText:SetPoint("TOPLEFT", 285, -80)
+				secretCheckText:SetText(L["Keep Secret?"])
+				--local isHidden = markers[i].hidden
+				--[[ secretCheckButton:SetScript("OnClick", function(self)
+					if self:GetChecked() then
+						isHidden = true
+					else
+						isHidden = false
+					end ]]
+				-- end)
 
+                
+
+                            
+                
                 -- Bouton "Enregistrer"
 				local saveButton = CreateFrame("Button", nil, editFrame, "GameMenuButtonTemplate")
 				saveButton:SetPoint("TOPLEFT", 214, -300)
@@ -195,16 +233,20 @@ f:SetScript("OnEvent", function(self, event)
 					local markerPowerText = markerPowerBox:GetText()
 					local markerHealthText = markerHealthBox:GetText()
 					local markerdescriptionText = markerDescriptionBox:GetText()
+                    local markerIsHidden = secretCheckButton:GetChecked()
 					-- Ajoutez le code pour enregistrer la compétence dans votre base de données locale ici
 					markers[i].name = markerNameText
 					markers[i].power = markerPowerText
 					markers[i].health = markerHealthText
 					markers[i].description = markerdescriptionText
-					MarkerName:SetText("|cFFFFFFFF" .. markers[i].name)
-					MarkerPower:SetText("|cFFFFFFFF" .. markers[i].power)
-					MarkerHealth:SetText("|cFFFFFFFF" .. markers[i].health)
+                    markers[i].hidden = markerIsHidden
+					MarkerName:SetText((markers[i].hidden and colorGrey or colorWhite) .. markers[i].name)
+					MarkerPower:SetText((markers[i].hidden and colorGrey or colorWhite) .. markers[i].power)
+					MarkerHealth:SetText((markers[i].hidden and colorGrey or colorWhite) .. markers[i].health)
                     editFrame:Hide()
+                    SkillSheetSendMarkers(i) -- envoi des marqueurs (si synchro true)
                     end)
+
 				-- Bouton "Supprimer"
 				local deleteButton = CreateFrame("Button", nil, editFrame, "GameMenuButtonTemplate")
 				deleteButton:SetPoint("TOPLEFT", 10, -300)
@@ -215,9 +257,10 @@ f:SetScript("OnEvent", function(self, event)
 					markers[i].power = ""
 					markers[i].health = ""
 					markers[i].description = ""
-					MarkerName:SetText("|cFFFFFFFF" .. markers[i].name)
-					MarkerPower:SetText("|cFFFFFFFF" .. markers[i].power)
-					MarkerHealth:SetText("|cFFFFFFFF" .. markers[i].health)
+                    markers[i].hidden = false
+					MarkerName:SetText((markers[i].hidden and colorGrey or colorWhite) .. markers[i].name)
+					MarkerPower:SetText((markers[i].hidden and colorGrey or colorWhite) .. markers[i].power)
+					MarkerHealth:SetText((markers[i].hidden and colorGrey or colorWhite) .. markers[i].health)
                     editFrame:Hide()
 				end)
                  -- Seulement si le joueur est chef de groupe ou raid assist
@@ -238,7 +281,7 @@ f:SetScript("OnEvent", function(self, event)
         end)
     end
     -- Boutons de synchronisation des marqueurs
-    local markerSync = false -- gère la synchronisation des marqueurs
+    --local markerSync = false -- gère la synchronisation des marqueurs
     local markerSyncButton = CreateFrame("CheckButton", "markerSyncButton", MarkerFrame, "ChatConfigCheckButtonTemplate")
     markerSyncButton:SetPoint("TOPLEFT", 10, -389)
     markerSyncButton:SetChecked(markerSync)
@@ -247,38 +290,51 @@ f:SetScript("OnEvent", function(self, event)
     markerSyncText:SetFontObject("GameFontNormal")
     markerSyncText:SetPoint("TOPLEFT", 38, -395)
     markerSyncText:SetText(L["Marker Sync?"])
-        if UnitIsGroupLeader("player") or UnitIsGroupAssistant("player") then
+        --[[ if UnitIsGroupLeader("player") or UnitIsGroupAssistant("player") then
             markerSyncButton:Enable()
         elseif UnitInRaid("player") or UnitInParty("player") then
             markerSyncButton:Disable()
         else
             markerSyncButton:Disable()
-        end
+        end ]]
     markerSyncButton:SetScript("OnClick", function(self)
         if self:GetChecked() then
-            markerSync = true
-        else
-            markerSync = false
+            if UnitIsGroupLeader("player") or UnitIsGroupAssistant("player") then
+                markerSync = true
+            elseif UnitInRaid("player") or UnitInParty("player") then
+                markerSync = false
+                markerSyncButton:SetChecked(markerSync)
+                print(L["You need to be leader or assist"])
+            else
+                markerSync = false
+                markerSyncButton:SetChecked(markerSync)
+                print(L["You need to be leader or assist"])
+            end
         end
     end)
 
-
     -- FONCTION D'ENVOI DES MARQUEURS
     if IsInRaid() then
-		channel = "RAID"
-	end
-    local function sendMarkers()
-        if markerSync == true then
-            for i = 1 , 8 do
-                C_Timer.After(i, function()
-		            C_ChatInfo.SendAddonMessage("SkillSheet", "MARKERS@" .. i .. "@" .. markers[i].name .. "@" .. markers[i].power .. "@" .. markers[i].health .. "@" .. markers[i].description, channel)
-                end)
-            end
+        channel = "RAID"
+    end
+    function SkillSheetSendMarkers(id)
+        if markerSync == true and (UnitInRaid("player") or UnitInParty("player")) and (UnitIsGroupLeader("player") or UnitIsGroupAssistant("player")) then
+            C_ChatInfo.SendAddonMessage("SkillSheet", "MARKERS@" .. UnitName("player") .. "@" .. id .. "@" .. markers[id].name .. "@" .. markers[id].power .. "@" .. markers[id].health .. "@" .. markers[id].description .. "@" .. tostring(markers[id].hidden), channel)
+        elseif markerSync == true then
+            markerSync = false
+            markerSyncButton:SetChecked(markerSync)
         end
 
-	end
+    end
 
-      
     -- Création du ticker
-	local ticker = C_Timer.NewTicker(8, sendMarkers)
+    local function cycleSync()
+        for i = 1 , 8 do
+            C_Timer.After(i*2, function()
+            SkillSheetSendMarkers(i)
+            end)
+        end
+    end
+
+    local ticker = C_Timer.NewTicker(16, cycleSync)
 end)

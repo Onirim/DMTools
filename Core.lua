@@ -1521,15 +1521,28 @@ end
 	-- Création du ticker
 	local ticker = C_Timer.NewTicker(5, sendInfo)
 
-	local function storeMarkers(id, markerName, markerPower, markerHealth, markerDescription)
+	-- Fonction d'enregistrement des marqueurs
+	local function storeMarkers(player, id, markerName, markerPower, markerHealth, markerDescription, markerHidden)
 		id = tonumber(id)
-		skillSheetMarkerNames[id]:SetText("|cFFFFFFFF" .. markerName)
-		markers[id].name = markerName
-		skillSheetMarkerPowers[id]:SetText("|cFFFFFFFF" .. markerPower)
-		markers[id].power = markerPower
-		skillSheetMarkerHealth[id]:SetText("|cFFFFFFFF" .. markerHealth)
-		markers[id].health = markerHealth
-		markers[id].description = markerDescription
+		if player ~= UnitName("player") and markerHidden == "false" then
+			skillSheetMarkerNames[id]:SetText("|cFFFFFFFF" .. markerName)
+			markers[id].name = markerName
+			skillSheetMarkerPowers[id]:SetText("|cFFFFFFFF" .. markerPower)
+			markers[id].power = markerPower
+			skillSheetMarkerHealth[id]:SetText("|cFFFFFFFF" .. markerHealth)
+			markers[id].health = markerHealth
+			markers[id].description = markerDescription
+			markers[id].hidden = false
+		elseif player ~= UnitName("player") and markerHidden == "true" then
+			skillSheetMarkerNames[id]:SetText("")
+			markers[id].name = ""
+			skillSheetMarkerPowers[id]:SetText("")
+			markers[id].power = ""
+			skillSheetMarkerHealth[id]:SetText("")
+			markers[id].health = ""
+			markers[id].description = ""
+			markers[id].hidden = true
+		end
     end
 	------------------------
 	--  COMMANDE SYSTEME  --
@@ -1554,7 +1567,7 @@ end
 	eventFrame:SetScript("OnEvent", function(self, event, prefix, message, channel, sender)
 		if event == "CHAT_MSG_ADDON" and prefix == "SkillSheet" then
 			local action, name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue = strsplit("@", message)
-			local action, id, markerName, markerPower, markerHealth, markerDescription, markerDump = strsplit("@", message)
+			local action, player, id, markerName, markerPower, markerHealth, markerDescription, markerHidden, markerDump = strsplit("@", message)
 			if action == "HELLO" then
 				onHelloMessage(name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue)
 			elseif action == "ROLL" then
@@ -1571,7 +1584,7 @@ end
 			elseif action == "FREE" then
 				newFreeTurn(name)
 			elseif action == "MARKERS" then
-				storeMarkers(id, markerName, markerPower, markerHealth, markerDescription)
+				storeMarkers(player, id, markerName, markerPower, markerHealth, markerDescription, markerHidden)
 				--print(id, markerName, markerPower, markerHealth, markerDescription)
 			end
 		end

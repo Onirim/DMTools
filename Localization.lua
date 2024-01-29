@@ -49,7 +49,7 @@ L["frFR"] = {
 	["Confirm new enemy turn"] = "Voulez-vous vraiment démarrer un nouveau tour ennemi ?",
 	["Confirm new free turn"] = "Voulez-vous vraiment démarrer un nouveau tour libre ?",
 	["Output Channel"] = "Canal de sortie",
-	["You need to be leader or assist"] = "Vous devez être chef de groupe/raid ou assistant de raid pour lancer un nouveau tour.",
+	["You need to be leader or assist"] = "Vous devez être chef de groupe/raid ou assistant de raid",
 	["Category?"] = "Catégorie ?",
 	["Category? Tooltip"] = "Si la case est cochée, le nom de compétence servira de séparateur de catégorie.",
 	["SkillSheet NPC"] = "SkillSheet : Panneau des marqueurs",
@@ -59,7 +59,9 @@ L["frFR"] = {
 	["Marker Power"] = "Puissance",
 	["Marker Description"] = "Description",
 	["Marker Sync?"] = "Activer la synchronisation des marqueurs",
-	["Marker Sync Tooltip"] = "En cochant cette case, vous enverrez vos marqueurs à tous les autres joueurs du groupe, écrasant les leurs s'ils en avaient"
+	["Marker Sync Tooltip"] = "En cochant cette case, vous enverrez vos marqueurs à tous les autres joueurs du groupe, écrasant les leurs s'ils en avaient",
+	["Keep Secret?"] = "Garder secret",
+	["Keep Secret Tooltip"] = "Si coché, le marqueur ne sera pas envoyé aux joueurs"
 		}
 	
 L["enUS"] = {
@@ -107,7 +109,7 @@ L["enUS"] = {
 	["Confirm new enemy turn"] = "Do you really want to start an enemy turn?",
 	["Confirm new enemy turn"] = "Do you really want to start an free turn?",
 	["Output Channel"] = "Output Channel", 
-	["You need to be leader or assist"] = "You need to be a party/raid leader or a raid assist for launch a new turn.",
+	["You need to be leader or assist"] = "You need to be a party/raid leader or a raid assist",
 	["Category?"] = "Category?",
 	["Category? Tooltip"] = "If checked, the skill name will be used as a category skill separator.",
 	["SkillSheet NPC"] = "SkillSheet: markers control panel",
@@ -117,7 +119,9 @@ L["enUS"] = {
 	["Marker Power"] = "Power",
 	["Marker Description"] = "Description",
 	["Marker Sync?"] = "Activate marker syncronization",
-	["Marker Sync Tooltip"] = "If checked, your markers will be sent to other players of the party and override theirs markers"
+	["Marker Sync Tooltip"] = "If checked, your markers will be sent to other players of the party and override theirs markers",
+	["Keep Secret?"] = "Keep secret",
+	["Keep Secret Tooltip"] = "If checked, the marker will not be sent to the players"
  		}
 	
     -- Ajoutez d'autres langues ici...
