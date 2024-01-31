@@ -1685,8 +1685,6 @@ end
 			SkillSheetImportData(MySkills)
 		elseif string.lower(msg) == "reset" then
 			SkillSheetReset(MySkills)
-		elseif string.lower(msg) == "hide" then
-			MarkerFrame:Hide()
 		else
 			print("Commande inconnue. Tapez /skillsheet pour l'aide.")
 		end

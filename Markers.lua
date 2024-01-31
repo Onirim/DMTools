@@ -4,6 +4,7 @@ local L = core.Locales[GetLocale()] or core.Locales["enUS"]
 local version = GetAddOnMetadata("SkillSheet", "Version")
 
 local markerSync = false
+local markerTransparent = false
 local colorWhite = "|cFFFFFFFF"
 local colorGrey = "|cFF7C7C7C"
 
@@ -46,6 +47,11 @@ f:SetScript("OnEvent", function(self, event)
     MarkerFramePage:SetScript("OnDragStop", MarkerFramePage.StopMovingOrSizing)
     MarkerFramePage:SetFrameStrata("MEDIUM")
     MarkerFramePage:Hide()
+    MarkerFramePage:SetScript("OnShow", function(self)
+        if markerTransparent == false then
+            MarkerFrame:Show()
+        end
+    end)
     
 
     -- Création du cadre
@@ -56,8 +62,12 @@ f:SetScript("OnEvent", function(self, event)
     MarkerFrame:SetPoint("CENTER", 50, 0) -- Position sur l'écran
     MarkerFrame:SetFrameStrata("LOW")
     MarkerFrame.Inset:Hide()
-    --MarkerFrame:Hide() -- A réactiver en PROD
-    --MarkerFrame:SetAlpha(0.5)
+    -- Ajout d'un gestionnaire d'événements OnHide à MarkerFrame
+    MarkerFrame:SetScript("OnHide", function(self)
+        if markerTransparent == false then
+            MarkerFramePage:Hide()
+        end
+    end)
 
     
 
@@ -374,12 +384,12 @@ f:SetScript("OnEvent", function(self, event)
     markerTransparentText:SetText(L["Marker Trans?"])
     markerTransparentButton:SetScript("OnClick", function(self)
         if self:GetChecked() then
-            MarkerFrame:Hide()
             markerTransparent = true
+            MarkerFrame:Hide()
         else
-            MarkerFrame:Show()
             markerTransparent = false
-        end
+            MarkerFrame:Show()
+         end
     end)
 
     -- FONCTION D'ENVOI DES MARQUEURS
