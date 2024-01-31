@@ -405,6 +405,8 @@ f:SetScript("OnEvent", function(self, event)
 			displayRessourceValue = displayRessourceValue .. ressourceValue .. "\n\n"
 			if skillName ~= "" then
 				table.insert(orderedDescription, {name = name, skillID = player.skillID}) -- insertion de l'ordre des joueurs dans une table
+			else
+				table.insert(orderedDescription, {name = name, skillID = 0})
 			end
 		end
 		displayTableName:SetText(displayName)
@@ -1649,6 +1651,12 @@ end
 
 	-- Fonction d'enregistrement des données de description des compétences
 	local function storeSkillDescription(name, descSkillID, partID, descriptionPart)
+		-- Parcourir la table pour trouver et supprimer les données existantes
+		for i = #descriptionDetails, 1, -1 do
+			if descriptionDetails[i].name == name and descriptionDetails[i].descSkillID == descSkillID then
+				table.remove(descriptionDetails, i)
+			end
+		end
 		table.insert(descriptionDetails, {name = name, descSkillID = descSkillID, partID = partID, descriptionPart = descriptionPart})
 	end
 	------------------------
