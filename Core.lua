@@ -89,6 +89,8 @@ local lastHealthValue = ""
 local lastRessourceValue = ""
 local nameColors = {}
 local outputChannel = "SKILLSHEET"
+local orderedDescription = {}
+local descriptionDetails = {}
 skillSheetMarkerNames = {}
 skillSheetMarkerPowers = {}
 skillSheetMarkerHealth = {}
@@ -322,10 +324,54 @@ f:SetScript("OnEvent", function(self, event)
 	displayTableRessourceValue:SetText("")
 	displayTableRessourceValue:SetWidth(100)
 
+	-- Création du tooltip
+	local tooltip = CreateFrame("GameTooltip", "MyTooltip", SkillFrameGM, "GameTooltipTemplate")
+
+	-- Tableau pour stocker les frames de ligne
+	local function generateTooltips()
+		for i = 1 , 19 do
+			local lineFrame = CreateFrame("Frame", nil, SkillFrameGM)
+			lineFrame:SetSize(175, 16) -- Ajustez la taille en fonction de votre ligne
+			-- Ajustez la position en fonction de votre ligne et de l'index
+			lineFrame:SetPoint("TOPLEFT", displayTableName, "TOPLEFT", 100, -i * 24 +25)
+			lineFrame:EnableMouse(true)
+
+			-- Création de la texture
+			local texture = lineFrame:CreateTexture(nil, "BACKGROUND")
+			texture:SetAllPoints()
+			texture:SetColorTexture(1, 1, 1, 0) -- Les quatre paramètres sont Rouge, Vert, Bleu et Alpha (transparence)
+
+			-- Affichage du tooltip lors du survol
+			lineFrame:SetScript("OnEnter", function(self)
+				tooltip:SetOwner(self, "ANCHOR_RIGHT")  -- Définir le propriétaire du tooltip ici
+				tooltip:ClearLines()
+				if orderedDescription[i] ~= nil then
+				tooltip:SetMinimumWidth(400)
+				local concatenateDescription = ""
+				for _, detail in ipairs(descriptionDetails) do
+					if detail.name == orderedDescription[i].name and detail.descSkillID == orderedDescription[i].skillID then
+						concatenateDescription = concatenateDescription .. detail.descriptionPart
+					end
+
+				end
+				tooltip:AddLine(concatenateDescription, 1, 1, 1, true)
+				tooltip:Show()
+				end
+			end)
+		
+			-- Cacher le tooltip lorsque la souris quitte la frame
+			lineFrame:SetScript("OnLeave", function(self)
+				tooltip:Hide()
+			end)
+		
+		end
+	end
+
+
 	-- Mise à jour de la table
 	
 	local function updateDisplayTable()
-	--local nameColor = "|cFF52BE80"
+	orderedDescription = {}
 	local displayName = displayName or ""
 	local displaySkillName = displaySkillName or ""
 	local displayRoll = displayRoll or ""
@@ -357,6 +403,9 @@ f:SetScript("OnEvent", function(self, event)
 			displayHealthValue = displayHealthValue .. healthValue .. "\n\n"
 			local ressourceValue = player.ressourceValue or ""
 			displayRessourceValue = displayRessourceValue .. ressourceValue .. "\n\n"
+			if skillName ~= "" then
+				table.insert(orderedDescription, {name = name, skillID = player.skillID}) -- insertion de l'ordre des joueurs dans une table
+			end
 		end
 		displayTableName:SetText(displayName)
 		displayTableSkillName:SetText(displaySkillName)
@@ -364,7 +413,12 @@ f:SetScript("OnEvent", function(self, event)
 		displayTableRessource:SetText(displayRessource)
 		displayTableHealthValue:SetText(displayHealthValue)
 		displayTableRessourceValue:SetText(displayRessourceValue)
+		generateTooltips()
 	end
+
+	
+
+	
 
 	-- Création de la boîte de dialogue de confirmation de nouveau tour joueur
 	local confirmNewTurn = CreateFrame("Frame", "confirmNewTurn", SkillFrameGM, "ButtonFrameTemplate")
@@ -591,7 +645,17 @@ f:SetScript("OnEvent", function(self, event)
 			if IsInRaid() then
 				channel = "RAID"
 			end
-			C_ChatInfo.SendAddonMessage("SkillSheet", "ROLL@" .. playerName .. "@" .. MySkills[i].name .. "@" .. lastDiceRoll .. "@" .. MySkills[i].roll .. "@" .. lastCostRoll .. "@" .. MySkills[i].cost .. "@" .. healthValue .. "@" .. ressourceValue, channel)
+			C_ChatInfo.SendAddonMessage("SkillSheet", "ROLL@" .. playerName .. "@" .. MySkills[i].name .. "@" .. lastDiceRoll .. "@" .. MySkills[i].roll .. "@" .. lastCostRoll .. "@" .. MySkills[i].cost .. "@" .. healthValue .. "@" .. ressourceValue .. "@" .. i, channel)
+			-- découpage de la description en plusieurs parties
+			local length = string.len(MySkills[i].description)
+			local start = 1
+			local partID = 1
+			while start < length do
+				local subStr = string.sub(MySkills[i].description, start, start + 150)
+				C_ChatInfo.SendAddonMessage("SkillSheet", "DESC@" .. playerName .. "@" .. i .. "@" .. partID .. "@" ..  subStr, channel)
+				start = start +151
+				partID = partID +1
+			end
 			-- partie gérant l'affichage de la notification en emote ou en communication interne
 			local displayRoll = "" -- a utiliser pour l'affichage
 			local displayRollValue = "" -- temporaire
@@ -836,7 +900,17 @@ for i = 16, 30 do
 		if IsInRaid() then
 			channel = "RAID"
 		end
-		C_ChatInfo.SendAddonMessage("SkillSheet", "ROLL@" .. playerName .. "@" .. MySkills[i].name .. "@" .. lastDiceRoll .. "@" .. MySkills[i].roll .. "@" .. lastCostRoll .. "@" .. MySkills[i].cost .. "@" .. healthValue .. "@" .. ressourceValue, channel)
+		C_ChatInfo.SendAddonMessage("SkillSheet", "ROLL@" .. playerName .. "@" .. MySkills[i].name .. "@" .. lastDiceRoll .. "@" .. MySkills[i].roll .. "@" .. lastCostRoll .. "@" .. MySkills[i].cost .. "@" .. healthValue .. "@" .. ressourceValue .. "@" .. i, channel)
+			-- découpage de la description en plusieurs parties
+			local length = string.len(MySkills[i].description)
+			local start = 1
+			local partID = 1
+			while start < length do
+				local subStr = string.sub(MySkills[i].description, start, start + 150)
+				C_ChatInfo.SendAddonMessage("SkillSheet", "DESC@" .. playerName .. "@" .. i .. "@" .. partID .. "@" ..  subStr, channel)
+				start = start +151
+				partID = partID +1
+			end
 		-- partie gérant l'affichage de la notification en emote ou en communication interne
 		local displayRoll = "" -- a utiliser pour l'affichage
 		local displayRollValue = "" -- temporaire
@@ -1082,7 +1156,17 @@ for i = 31, 45 do
 		if IsInRaid() then
 			channel = "RAID"
 		end
-		C_ChatInfo.SendAddonMessage("SkillSheet", "ROLL@" .. playerName .. "@" .. MySkills[i].name .. "@" .. lastDiceRoll .. "@" .. MySkills[i].roll .. "@" .. lastCostRoll .. "@" .. MySkills[i].cost .. "@" .. healthValue .. "@" .. ressourceValue, channel)
+		C_ChatInfo.SendAddonMessage("SkillSheet", "ROLL@" .. playerName .. "@" .. MySkills[i].name .. "@" .. lastDiceRoll .. "@" .. MySkills[i].roll .. "@" .. lastCostRoll .. "@" .. MySkills[i].cost .. "@" .. healthValue .. "@" .. ressourceValue .. "@" .. i, channel)
+			-- découpage de la description en plusieurs parties
+			local length = string.len(MySkills[i].description)
+			local start = 1
+			local partID = 1
+			while start < length do
+				local subStr = string.sub(MySkills[i].description, start, start + 150)
+				C_ChatInfo.SendAddonMessage("SkillSheet", "DESC@" .. playerName .. "@" .. i .. "@" .. partID .. "@" ..  subStr, channel)
+				start = start +151
+				partID = partID +1
+			end
 		-- partie gérant l'affichage de la notification en emote ou en communication interne
 		local displayRoll = "" -- a utiliser pour l'affichage
 		local displayRollValue = "" -- temporaire
@@ -1448,12 +1532,12 @@ end
 
 
 	-- Mise à jour de la table des participants lors de la réception d'un message HELLO
-	local function onHelloMessage(name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue)
+	local function onHelloMessage(name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue, skillID)
 		
 		if players[name] == nil then
-			players[name] = {skillName = skillName, diceRoll = diceRoll, diceValue = diceValue, costRoll = costRoll, costValue = costValue, healthValue = healthValue, ressourceValue = ressourceValue}
+			players[name] = {skillName = skillName, diceRoll = diceRoll, diceValue = diceValue, costRoll = costRoll, costValue = costValue, healthValue = healthValue, ressourceValue = ressourceValue, skillID = skillID}
 		elseif skillName ~= nil and skillName ~= "" then
-			players[name] = {skillName = skillName, diceRoll = diceRoll, diceValue = diceValue, costRoll = costRoll, costValue = costValue, healthValue = healthValue, ressourceValue = ressourceValue}
+			players[name] = {skillName = skillName, diceRoll = diceRoll, diceValue = diceValue, costRoll = costRoll, costValue = costValue, healthValue = healthValue, ressourceValue = ressourceValue, skillID = skillID}
 		end
 		updateDisplayTable()
 		
@@ -1461,7 +1545,7 @@ end
 
 	-- Mise à jour de la table des participants lors de la réception d'un message SYNC
 	local function onSyncMessage(name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue)
-		players[name] = {skillName = skillName, diceRoll = diceRoll, diceValue = diceValue, costRoll = costRoll, costValue = costValue, healthValue = healthValue, ressourceValue = ressourceValue}
+		players[name] = {skillName = skillName, diceRoll = diceRoll, diceValue = diceValue, costRoll = costRoll, costValue = costValue, healthValue = healthValue, ressourceValue = ressourceValue, skillID = skillID}
 		updateDisplayTable()
 		
 	end
@@ -1562,6 +1646,11 @@ end
 			markers[id].hidden = true
 		end
     end
+
+	-- Fonction d'enregistrement des données de description des compétences
+	local function storeSkillDescription(name, descSkillID, partID, descriptionPart)
+		table.insert(descriptionDetails, {name = name, descSkillID = descSkillID, partID = partID, descriptionPart = descriptionPart})
+	end
 	------------------------
 	--  COMMANDE SYSTEME  --
 	------------------------
@@ -1604,13 +1693,15 @@ end
 
 	eventFrame:SetScript("OnEvent", function(self, event, prefix, message, channel, sender)
 		if event == "CHAT_MSG_ADDON" and prefix == "SkillSheet" then
-			local action, name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue = strsplit("@", message)
+			local action, name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue, skillID = strsplit("@", message)
 			local action, player, id, markerName, markerPower, markerHealth, markerDescription, markerHidden, markerDump = strsplit("@", message)
+			local action, name, descSkillID, partID, descriptionPart, descDump = strsplit("@", message)
 			if action == "HELLO" then
-				onHelloMessage(name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue)
+				onHelloMessage(name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue, skillID)
 			elseif action == "ROLL" then
 				nameColors[name] = "|cFF52BE80"
-				onHelloMessage(name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue)
+				onHelloMessage(name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue, skillID)
+				--print(name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue, skillID)
 			elseif action == "SYNC" then
 				onSyncMessage(name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue)
 			elseif action == "EMOTE" and outputChannel == "SKILLSHEET" then
@@ -1623,7 +1714,9 @@ end
 				newFreeTurn(name)
 			elseif action == "MARKERS" then
 				storeMarkers(player, id, markerName, markerPower, markerHealth, markerDescription, markerHidden)
-				--print(id, markerName, markerPower, markerHealth, markerDescription)
+			elseif action == "DESC" then
+				--print(action, name, descSkillID, partID, description)
+				storeSkillDescription(name, descSkillID, partID, descriptionPart)
 			end
 		end
 	end)
