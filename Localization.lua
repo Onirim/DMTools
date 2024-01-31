@@ -58,7 +58,7 @@ L["frFR"] = {
 	["Marker Name"] = "Nom du marqueur",
 	["Marker Power"] = "Puissance",
 	["Marker Description"] = "Description",
-	["Marker Sync?"] = "Activer la synchronisation des marqueurs",
+	["Marker Sync?"] = "Activer la synchronisation",
 	["Marker Sync Tooltip"] = "En cochant cette case, vous enverrez vos marqueurs à tous les autres joueurs du groupe, écrasant les leurs s'ils en avaient",
 	["Keep Secret?"] = "Garder secret",
 	["Keep Secret Tooltip"] = "Si coché, le marqueur ne sera pas envoyé aux joueurs",
@@ -71,7 +71,9 @@ L["frFR"] = {
 	["SkillSheet Import"] = "/SkillSheet Import - Fonction d'import de fiche de personnage",
 	["Import"] = "Importation de la fiche",
 	["How to import"] = "Collez ici les données à importer",
-	["Data Imported"] = "La fiche de personnage a été importée avec succès"
+	["Data Imported"] = "La fiche de personnage a été importée avec succès",
+	["Marker Transparent Tooltip"] = "Cochez cette case pour rendre le panneau translucide",
+	["Marker Trans?"] = "Rendre translucide"
 		}
 	
 L["enUS"] = {
@@ -128,7 +130,7 @@ L["enUS"] = {
 	["Marker Name"] = "Marker Name",
 	["Marker Power"] = "Power",
 	["Marker Description"] = "Description",
-	["Marker Sync?"] = "Activate marker syncronization",
+	["Marker Sync?"] = "Activate syncronization",
 	["Marker Sync Tooltip"] = "If checked, your markers will be sent to other players of the party and override theirs markers",
 	["Keep Secret?"] = "Keep secret",
 	["Keep Secret Tooltip"] = "If checked, the marker will not be sent to the players",
@@ -141,7 +143,9 @@ L["enUS"] = {
 	["SkillSheet Import"] = "/SkillSheet Import - Character Sheet import function",
 	["Import"] = "Character Sheet Import",
 	["How to import"] = "Past here the data to import",
-	["Data Imported"] = "The character sheet has been imported successfully"
+	["Data Imported"] = "The character sheet has been imported successfully",
+	["Marker Transparent Tooltip"] = "Check this for making the panel translucent",
+	["Marker Trans?"] = "Makes translucid"
  		}
 	
     -- Ajoutez d'autres langues ici...

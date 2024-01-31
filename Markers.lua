@@ -35,36 +35,47 @@ f:SetScript("OnEvent", function(self, event)
     --------------------------
     -- INTERFACE PRINCIPALE --
     --------------------------
+    -- Création de la page transparente
+	local MarkerFramePage = CreateFrame("Frame", "MarkerFramePage", UIParent)
+	MarkerFramePage:SetSize(280, 420)
+	MarkerFramePage:SetPoint("RIGHT", -300, 60)  -- Positionne la frame au centre de l'écran
+    MarkerFramePage:EnableMouse(true)
+    MarkerFramePage:SetMovable(true)
+    MarkerFramePage:RegisterForDrag("LeftButton")
+    MarkerFramePage:SetScript("OnDragStart", MarkerFramePage.StartMoving)
+    MarkerFramePage:SetScript("OnDragStop", MarkerFramePage.StopMovingOrSizing)
+    MarkerFramePage:SetFrameStrata("MEDIUM")
+    MarkerFramePage:Hide()
+    
+
     -- Création du cadre
-    local MarkerFrame = CreateFrame("Frame", "MarkerFrame", UIParent, "ButtonFrameTemplate")
+    local MarkerFrame = CreateFrame("Frame", "MarkerFrame", MarkerFramePage, "ButtonFrameTemplate")
     MarkerFrame:SetTitle(L["SkillSheet NPC"])
     MarkerFrame:SetPortraitToAsset("Interface\\ICONS\\inv_inscription_runescrolloffortitude_yellow")
     MarkerFrame:SetSize(380, 420) -- Largeur, Hauteur
-    MarkerFrame:SetPoint("RIGHT", -300, 60) -- Position sur l'écran
-    MarkerFrame:EnableMouse(true)
-    MarkerFrame:SetMovable(true)
-    MarkerFrame:RegisterForDrag("LeftButton")
-    MarkerFrame:SetScript("OnDragStart", MarkerFrame.StartMoving)
-    MarkerFrame:SetScript("OnDragStop", MarkerFrame.StopMovingOrSizing)
+    MarkerFrame:SetPoint("CENTER", 50, 0) -- Position sur l'écran
     MarkerFrame:SetFrameStrata("LOW")
     MarkerFrame.Inset:Hide()
-    MarkerFrame:Hide() -- A réactiver en PROD
+    --MarkerFrame:Hide() -- A réactiver en PROD
+    --MarkerFrame:SetAlpha(0.5)
+
+    
 
     -- Création des entête de compétence du volet principal
-    local tableHeaders = MarkerFrame:CreateFontString(nil, "OVERLAY")
+    local tableHeaders = MarkerFramePage:CreateFontString(nil, "OVERLAY")
     tableHeaders:SetFontObject("GameFontNormal")
     tableHeaders:SetPoint("TOPLEFT", 65, - 35)
     tableHeaders:SetText(L["Marker Table Header"])
 
     -- Création de la ligne de séparation haute
-	local line = MarkerFrame:CreateTexture(nil, "BACKGROUND")
+	local line = MarkerFramePage:CreateTexture(nil, "BACKGROUND")
 	line:SetHeight(2)  -- Définit l'épaisseur de la ligne
 	line:SetWidth(MarkerFrame:GetWidth())  -- Définit la largeur de la ligne
 	line:SetPoint("TOPLEFT", 0, - 50)  -- Positionne la ligne au centre de la frame
 	line:SetColorTexture(1, 1, 1, 0.2)  -- Définit la couleur de la ligne (ici, blanc semi-transparent)
 
     -- Création de la ligne de séparation basse
-	local line = MarkerFrame:CreateTexture(nil, "BACKGROUND")
+	local line = MarkerFramePage:CreateTexture(nil, "BACKGROUND")
 	line:SetHeight(2)  -- Définit l'épaisseur de la ligne
 	line:SetWidth(MarkerFrame:GetWidth())  -- Définit la largeur de la ligne
 	line:SetPoint("TOPLEFT", 0, - 380)  -- Positionne la ligne au centre de la frame
@@ -72,7 +83,7 @@ f:SetScript("OnEvent", function(self, event)
 
     for i = 1, 8 do
         
-        local icon = MarkerFrame:CreateTexture(nil, "OVERLAY")
+        local icon = MarkerFramePage:CreateTexture(nil, "OVERLAY")
         icon:SetTexture("Interface\\TargetingFrame\\UI-RaidTargetingIcon_" .. i)
         icon:SetPoint("TOPLEFT", 10, -40 * i -20)
         icon:SetSize(30, 30)
@@ -85,7 +96,7 @@ f:SetScript("OnEvent", function(self, event)
         end)
         
         -- Nom du marqueur
-        local MarkerName = MarkerFrame:CreateFontString(nil, "OVERLAY")
+        local MarkerName = MarkerFramePage:CreateFontString(nil, "OVERLAY")
         MarkerName:SetFontObject("GameFontNormal")
         MarkerName:SetPoint("TOPLEFT", 50, -40 * i - 30)
         MarkerName:SetText((markers[i].hidden and colorGrey or colorWhite) .. markers[i].name)
@@ -93,7 +104,7 @@ f:SetScript("OnEvent", function(self, event)
         skillSheetMarkerNames[i] = MarkerName
 
         -- Puissance du marqueur
-        local MarkerPower = MarkerFrame:CreateFontString(nil, "OVERLAY")
+        local MarkerPower = MarkerFramePage:CreateFontString(nil, "OVERLAY")
         MarkerPower:SetFontObject("GameFontNormal")
         MarkerPower:SetPoint("TOPLEFT", 205, -40 * i - 30)
         MarkerPower:SetText((markers[i].hidden and colorGrey or colorWhite) .. markers[i].power)
@@ -101,7 +112,7 @@ f:SetScript("OnEvent", function(self, event)
         skillSheetMarkerPowers[i] = MarkerPower
 
         -- Santé du marqueur
-        local MarkerHealth = MarkerFrame:CreateFontString(nil, "OVERLAY")
+        local MarkerHealth = MarkerFramePage:CreateFontString(nil, "OVERLAY")
         MarkerHealth:SetFontObject("GameFontNormal")
         MarkerHealth:SetPoint("TOPLEFT", 280, -40 * i - 30)
         MarkerHealth:SetText((markers[i].hidden and colorGrey or colorWhite) .. markers[i].health)
@@ -123,7 +134,7 @@ f:SetScript("OnEvent", function(self, event)
                 -- Création de la fenêtre d'édition de compétence
                 local editFrame = CreateFrame("Frame", "editFrame", UIParent, "ButtonFrameTemplate")
                 editFrame:SetTitle(L["Marker Details"])
-                editFrame:SetSize(400, 330) -- Largeur, Hauteur
+                editFrame:SetSize(400, 230) -- Largeur, Hauteur
                 editFrame:SetPoint("CENTER", 0, -0) -- Position sur l'écran
                 ButtonFrameTemplate_HidePortrait(editFrame) 
                 ButtonFrameTemplate_HideButtonBar(editFrame) 
@@ -183,7 +194,7 @@ f:SetScript("OnEvent", function(self, event)
 				markerDescriptionText:SetText(L["Marker Description"])
 				-- Création de la frame de fond pour la description
 				local markerDescriptionBackground = CreateFrame("Frame", nil, editFrame)
-				markerDescriptionBackground:SetSize(380, 195)  -- Définit la taille de la frame
+				markerDescriptionBackground:SetSize(380, 95)  -- Définit la taille de la frame
 				markerDescriptionBackground:SetPoint("TOPLEFT", 13, -100)  -- Positionne la frame au centre de l'écran
 				-- Création de la texture de fond
 				local bg = markerDescriptionBackground:CreateTexture(nil, "BACKGROUND")
@@ -200,6 +211,7 @@ f:SetScript("OnEvent", function(self, event)
 				markerDescriptionBox:SetPoint("TOPLEFT", 15, -105)
 				markerDescriptionBox:SetAutoFocus(false)
 				markerDescriptionBox:SetText(markers[i].description)
+                markerDescriptionBox:SetMaxLetters(150)
                 -- Coche garder secret
 				local secretCheckButton = CreateFrame("CheckButton", "secretCheckButton", editFrame, "ChatConfigCheckButtonTemplate")
 				secretCheckButton:SetPoint("TOPLEFT", 369, -75)
@@ -217,14 +229,11 @@ f:SetScript("OnEvent", function(self, event)
 						isHidden = false
 					end ]]
 				-- end)
-
-                
-
-                            
+   
                 
                 -- Bouton "Enregistrer"
 				local saveButton = CreateFrame("Button", nil, editFrame, "GameMenuButtonTemplate")
-				saveButton:SetPoint("TOPLEFT", 214, -300)
+				saveButton:SetPoint("TOPLEFT", 214, -200)
 				saveButton:SetSize(180, 25)
 				saveButton:SetText(L["Save"])
 				saveButton:SetScript("OnClick", function()
@@ -249,7 +258,7 @@ f:SetScript("OnEvent", function(self, event)
 
 				-- Bouton "Supprimer"
 				local deleteButton = CreateFrame("Button", nil, editFrame, "GameMenuButtonTemplate")
-				deleteButton:SetPoint("TOPLEFT", 10, -300)
+				deleteButton:SetPoint("TOPLEFT", 10, -200)
 				deleteButton:SetSize(120, 25)
 				deleteButton:SetText(L["Delete"])
 				deleteButton:SetScript("OnClick", function()
@@ -279,24 +288,65 @@ f:SetScript("OnEvent", function(self, event)
                 end               
             end
         end)
+
     end
+    -- Création du tooltip
+    local tooltip = CreateFrame("GameTooltip", "MarkerTooltip", MarkerFramePage, "GameTooltipTemplate")
+
+    -- Tableau pour stocker les frames de ligne
+    local function SkillSheetGenerateMarkerTooltips()
+        for i = 1 , 8 do
+            local lineFrame = CreateFrame("Frame", nil, MarkerFramePage)
+            lineFrame:SetSize(150, 25) -- Ajustez la taille en fonction de votre ligne
+            -- Ajustez la position en fonction de votre ligne et de l'index
+            lineFrame:SetPoint("TOPLEFT", MarkerFramePage, "TOPLEFT", 45, -i * 40 -23)
+            lineFrame:EnableMouse(true)
+            --lineFrame:SetFrameStrata("MEDIUM")
+
+            -- Création de la texture
+            local texture = lineFrame:CreateTexture(nil, "BACKGROUND")
+            texture:SetAllPoints()
+            texture:SetColorTexture(1, 1, 1, 0) -- Les quatre paramètres sont Rouge, Vert, Bleu et Alpha (transparence)
+
+            -- Affichage du tooltip lors du survol
+            lineFrame:SetScript("OnEnter", function(self)
+                tooltip:SetOwner(self, "ANCHOR_RIGHT")  -- Définir le propriétaire du tooltip ici
+                tooltip:ClearLines()
+                if markers[i].description ~= nil then
+                    tooltip:SetMinimumWidth(300)
+                    --[[ local concatenateDescription = ""
+                    for _, detail in ipairs(descriptionDetails) do
+                        if detail.name == orderedDescription[i].name and detail.descSkillID == orderedDescription[i].skillID then
+                            concatenateDescription = concatenateDescription .. detail.descriptionPart
+                        end
+
+                    end ]]
+                --tooltip:AddLine(concatenateDescription, 1, 1, 1, true)
+                tooltip:AddLine(markers[i].description, 1, 1, 1, true)
+                --print(markers[i].description)
+                tooltip:Show()
+                end
+            end)
+        
+            -- Cacher le tooltip lorsque la souris quitte la frame
+            lineFrame:SetScript("OnLeave", function(self)
+                tooltip:Hide()
+            end)
+        
+        end
+    end
+    SkillSheetGenerateMarkerTooltips()
+    
     -- Boutons de synchronisation des marqueurs
     --local markerSync = false -- gère la synchronisation des marqueurs
-    local markerSyncButton = CreateFrame("CheckButton", "markerSyncButton", MarkerFrame, "ChatConfigCheckButtonTemplate")
+    local markerSyncButton = CreateFrame("CheckButton", "markerSyncButton", MarkerFramePage, "ChatConfigCheckButtonTemplate")
     markerSyncButton:SetPoint("TOPLEFT", 10, -389)
     markerSyncButton:SetChecked(markerSync)
     markerSyncButton.tooltip = L["Marker Sync Tooltip"]
-    local markerSyncText = MarkerFrame:CreateFontString(nil, "OVERLAY")
+    local markerSyncText = MarkerFramePage:CreateFontString(nil, "OVERLAY")
     markerSyncText:SetFontObject("GameFontNormal")
     markerSyncText:SetPoint("TOPLEFT", 38, -395)
     markerSyncText:SetText(L["Marker Sync?"])
-        --[[ if UnitIsGroupLeader("player") or UnitIsGroupAssistant("player") then
-            markerSyncButton:Enable()
-        elseif UnitInRaid("player") or UnitInParty("player") then
-            markerSyncButton:Disable()
-        else
-            markerSyncButton:Disable()
-        end ]]
     markerSyncButton:SetScript("OnClick", function(self)
         if self:GetChecked() then
             if UnitIsGroupLeader("player") or UnitIsGroupAssistant("player") then
@@ -313,6 +363,25 @@ f:SetScript("OnEvent", function(self, event)
         end
     end)
 
+    -- Boutons de transparence
+    local markerTransparentButton = CreateFrame("CheckButton", "markerSyncButton", MarkerFramePage, "ChatConfigCheckButtonTemplate")
+    markerTransparentButton:SetPoint("TOPLEFT", 220, -389)
+    markerTransparentButton:SetChecked(markerTransparent)
+    markerTransparentButton.tooltip = L["Marker Transparent Tooltip"]
+    local markerTransparentText = MarkerFramePage:CreateFontString(nil, "OVERLAY")
+    markerTransparentText:SetFontObject("GameFontNormal")
+    markerTransparentText:SetPoint("TOPLEFT", 248, -395)
+    markerTransparentText:SetText(L["Marker Trans?"])
+    markerTransparentButton:SetScript("OnClick", function(self)
+        if self:GetChecked() then
+            MarkerFrame:Hide()
+            markerTransparent = true
+        else
+            MarkerFrame:Show()
+            markerTransparent = false
+        end
+    end)
+
     -- FONCTION D'ENVOI DES MARQUEURS
     if IsInRaid() then
         channel = "RAID"
@@ -320,7 +389,7 @@ f:SetScript("OnEvent", function(self, event)
     function SkillSheetSendMarkers(id)
         if markerSync == true and (UnitInRaid("player") or UnitInParty("player")) and (UnitIsGroupLeader("player") or UnitIsGroupAssistant("player")) then
             C_ChatInfo.SendAddonMessage("SkillSheet", "MARKERS@" .. UnitName("player") .. "@" .. id .. "@" .. markers[id].name .. "@" .. markers[id].power .. "@" .. markers[id].health .. "@" .. markers[id].description .. "@" .. tostring(markers[id].hidden), channel)
-        elseif markerSync == true then
+        elseif markerSync == true and markers[id].hidden == false then
             markerSync = false
             markerSyncButton:SetChecked(markerSync)
         end

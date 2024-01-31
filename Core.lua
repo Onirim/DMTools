@@ -57,10 +57,10 @@ function SkillSheetCreateMinimapButton()
                 	SkillFrame:Show()
                 end
 			elseif button == "RightButton" then
-				if MarkerFrame:IsVisible() then
-					MarkerFrame:Hide()
+				if MarkerFramePage:IsVisible() then
+					MarkerFramePage:Hide()
 				else
-					MarkerFrame:Show()
+					MarkerFramePage:Show()
 				end
 			end
         end,
@@ -1637,6 +1637,7 @@ end
 			markers[id].health = markerHealth
 			markers[id].description = markerDescription
 			markers[id].hidden = false
+			--print(markers[id].description)
 		elseif player ~= UnitName("player") and markerHidden == "true" then
 			skillSheetMarkerNames[id]:SetText("")
 			markers[id].name = ""
@@ -1653,7 +1654,7 @@ end
 	local function storeSkillDescription(name, descSkillID, partID, descriptionPart)
 		-- Parcourir la table pour trouver et supprimer les données existantes
 		for i = #descriptionDetails, 1, -1 do
-			if descriptionDetails[i].name == name and descriptionDetails[i].descSkillID == descSkillID then
+			if descriptionDetails[i].name == name and descriptionDetails[i].descSkillID == descSkillID and descriptionDetails[i].partID ==  partID then
 				table.remove(descriptionDetails, i)
 			end
 		end
@@ -1684,6 +1685,8 @@ end
 			SkillSheetImportData(MySkills)
 		elseif string.lower(msg) == "reset" then
 			SkillSheetReset(MySkills)
+		elseif string.lower(msg) == "hide" then
+			MarkerFrame:Hide()
 		else
 			print("Commande inconnue. Tapez /skillsheet pour l'aide.")
 		end
@@ -1722,6 +1725,7 @@ end
 				newFreeTurn(name)
 			elseif action == "MARKERS" then
 				storeMarkers(player, id, markerName, markerPower, markerHealth, markerDescription, markerHidden)
+				--print(player, id, markerName, markerPower, markerHealth, markerDescription, markerHidden)
 			elseif action == "DESC" then
 				--print(action, name, descSkillID, partID, description)
 				storeSkillDescription(name, descSkillID, partID, descriptionPart)
