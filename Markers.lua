@@ -56,7 +56,7 @@ f:SetScript("OnEvent", function(self, event)
     -- Création du cadre
     local MarkerFrame = CreateFrame("Frame", "MarkerFrame", MarkerFramePage, "ButtonFrameTemplate")
     MarkerFrame:SetTitle(L["SkillSheet NPC"])
-    MarkerFrame:SetPortraitToAsset("Interface\\ICONS\\inv_inscription_runescrolloffortitude_yellow")
+    MarkerFrame:SetPortraitToAsset("Interface\\ICONS\\inv_misc_grouplooking")
     MarkerFrame:SetSize(380, 420) -- Largeur, Hauteur
     MarkerFrame:SetPoint("CENTER", 50, 0) -- Position sur l'écran
     MarkerFrame:SetFrameStrata("LOW")
@@ -91,16 +91,42 @@ f:SetScript("OnEvent", function(self, event)
 	line:SetColorTexture(1, 1, 1, 0.2)  -- Définit la couleur de la ligne (ici, blanc semi-transparent)
 
     for i = 1, 8 do
-        
-        local icon = MarkerFramePage:CreateTexture(nil, "OVERLAY")
-        icon:SetTexture("Interface\\TargetingFrame\\UI-RaidTargetingIcon_" .. i)
+        local j = ""
+        if i == 1 then
+            j = 5
+        elseif i == 2 then
+            j = 6
+        elseif i == 3 then
+            j = 3
+        elseif i == 4 then
+            j = 2
+        elseif i == 5 then
+            j = 7
+        elseif i == 6 then
+            j = 1
+        elseif i == 7 then
+            j = 4
+        else 
+            j = 8
+        end
+        --local icon = MarkerFramePage:CreateTexture(nil, "OVERLAY")
+        local icon = CreateFrame("Button", "iconButton", MarkerFramePage, "SecureActionButtonTemplate") -- action button
+        -- icon:SetAttribute("type1", "macro") -- action button
+        -- icon:SetAttribute("macrotext1", "/wm " .. j) -- text for macro on left click
+        -- icon:SetAttribute("type2", "macro") -- action button for right click
+        -- icon:SetAttribute("macrotext2", "/cwm " .. j) -- text for macro on right click
+        icon:SetNormalTexture("Interface\\TargetingFrame\\UI-RaidTargetingIcon_" .. i) -- for action button
+        --icon:SetTexture("Interface\\TargetingFrame\\UI-RaidTargetingIcon_" .. i)
         icon:SetPoint("TOPLEFT", 10, -40 * i -20)
         icon:SetSize(30, 30)
+        icon:RegisterForClicks("AnyUp", "AnyDown")
         icon:SetScript("OnMouseDown", function(self, button)
             if button == "LeftButton" then
-                ChatFrame1EditBox:Insert("{rt" .. i .. "}")
-                ChatFrame1EditBox:Show()
-                ChatFrame1EditBox:SetFocus()
+                if markerSync == false then
+                    ChatFrame1EditBox:Insert("{rt" .. i .. "}")
+                    ChatFrame1EditBox:Show()
+                    ChatFrame1EditBox:SetFocus()
+                end
             end
         end)
         skillSheetMarkerIcon[i] = icon
@@ -321,7 +347,7 @@ f:SetScript("OnEvent", function(self, event)
 
             -- Affichage du tooltip lors du survol
             lineFrame:SetScript("OnEnter", function(self)
-                tooltip:SetOwner(self, "ANCHOR_RIGHT")  -- Définir le propriétaire du tooltip ici
+                tooltip:SetOwner(self, "ANCHOR_TOP")  -- Définir le propriétaire du tooltip ici
                 tooltip:ClearLines()
                 if markers[i].description ~= nil then
                     --tooltip:SetMinimumWidth(300)
@@ -362,15 +388,115 @@ f:SetScript("OnEvent", function(self, event)
         if self:GetChecked() then
             if UnitIsGroupLeader("player") or UnitIsGroupAssistant("player") then
                 markerSync = true
+                for i = 1, 8 do
+                    local j = ""
+                    if i == 1 then
+                        j = 5
+                    elseif i == 2 then
+                        j = 6
+                    elseif i == 3 then
+                        j = 3
+                    elseif i == 4 then
+                        j = 2
+                    elseif i == 5 then
+                        j = 7
+                    elseif i == 6 then
+                        j = 1
+                    elseif i == 7 then
+                        j = 4
+                    else 
+                        j = 8
+                    end
+                    skillSheetMarkerIcon[i]:SetAttribute("type1", "macro") -- action button
+                    skillSheetMarkerIcon[i]:SetAttribute("macrotext1", "/wm " .. j) -- text for macro on left click
+                    skillSheetMarkerIcon[i]:SetAttribute("type2", "macro") -- action button for right click
+                    skillSheetMarkerIcon[i]:SetAttribute("macrotext2", "/cwm " .. j) -- text for macro on right click
+                end
             elseif UnitInRaid("player") or UnitInParty("player") then
                 markerSync = false
+                for i = 1, 8 do
+                    local j = ""
+                    if i == 1 then
+                        j = 5
+                    elseif i == 2 then
+                        j = 6
+                    elseif i == 3 then
+                        j = 3
+                    elseif i == 4 then
+                        j = 2
+                    elseif i == 5 then
+                        j = 7
+                    elseif i == 6 then
+                        j = 1
+                    elseif i == 7 then
+                        j = 4
+                    else 
+                        j = 8
+                    end
+                    skillSheetMarkerIcon[i]:SetAttribute("type1", nil) -- action button
+                    skillSheetMarkerIcon[i]:SetAttribute("macrotext1", nil) -- text for macro on left click
+                    skillSheetMarkerIcon[i]:SetAttribute("type2", nil) -- action button for right click
+                    skillSheetMarkerIcon[i]:SetAttribute("macrotext2", nil) -- text for macro on right click
+                end
                 markerSyncButton:SetChecked(markerSync)
                 print(L["You need to be leader or assist"])
             else
+                for i = 1, 8 do
+                    local j = ""
+                    if i == 1 then
+                        j = 5
+                    elseif i == 2 then
+                        j = 6
+                    elseif i == 3 then
+                        j = 3
+                    elseif i == 4 then
+                        j = 2
+                    elseif i == 5 then
+                        j = 7
+                    elseif i == 6 then
+                        j = 1
+                    elseif i == 7 then
+                        j = 4
+                    else 
+                        j = 8
+                    end
+                    print("j'ai décoché !")
+                    skillSheetMarkerIcon[i]:SetAttribute("type1", nil) -- action button
+                    skillSheetMarkerIcon[i]:SetAttribute("macrotext1", nil) -- text for macro on left click
+                    skillSheetMarkerIcon[i]:SetAttribute("type2", nil) -- action button for right click
+                    skillSheetMarkerIcon[i]:SetAttribute("macrotext2", nil) -- text for macro on right click
+                end
                 markerSync = false
                 markerSyncButton:SetChecked(markerSync)
                 print(L["You need to be leader or assist"])
             end
+        else
+            for i = 1, 8 do
+                local j = ""
+                if i == 1 then
+                    j = 5
+                elseif i == 2 then
+                    j = 6
+                elseif i == 3 then
+                    j = 3
+                elseif i == 4 then
+                    j = 2
+                elseif i == 5 then
+                    j = 7
+                elseif i == 6 then
+                    j = 1
+                elseif i == 7 then
+                    j = 4
+                else 
+                    j = 8
+                end
+                skillSheetMarkerIcon[i]:SetAttribute("type1", nil) -- action button
+                skillSheetMarkerIcon[i]:SetAttribute("macrotext1", nil) -- text for macro on left click
+                skillSheetMarkerIcon[i]:SetAttribute("type2", nil) -- action button for right click
+                skillSheetMarkerIcon[i]:SetAttribute("macrotext2", nil) -- text for macro on right click
+            end
+            markerSync = false
+            --markerSyncButton:SetChecked(markerSync)   
         end
     end)
 

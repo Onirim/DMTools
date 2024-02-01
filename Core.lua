@@ -346,7 +346,7 @@ f:SetScript("OnEvent", function(self, event)
 
 			-- Affichage du tooltip lors du survol
 			lineFrame:SetScript("OnEnter", function(self)
-				tooltip:SetOwner(self, "ANCHOR_RIGHT")  -- Définir le propriétaire du tooltip ici
+				tooltip:SetOwner(self, "ANCHOR_TOP")  -- Définir le propriétaire du tooltip ici
 				tooltip:ClearLines()
 				if orderedDescription[i] ~= nil then
 				tooltip:SetMinimumWidth(400)
