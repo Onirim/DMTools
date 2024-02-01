@@ -95,11 +95,14 @@ skillSheetMarkerNames = {}
 skillSheetMarkerPowers = {}
 skillSheetMarkerHealth = {}
 skillSheetMarkerDescription = {}
+skillSheetMarkerIcon = {}
 SkillSheetSkillName = {}
 SkillSheetDiceValue = {}
 SkillSheetCostValue = {}
 SkillSheetRollButton = {}
 SkillSheetNewMySkills = {}
+SkillSheetMarkerTransparent = false
+
 
 
 ----------------------------
@@ -1637,6 +1640,7 @@ end
 			markers[id].health = markerHealth
 			markers[id].description = markerDescription
 			markers[id].hidden = false
+			skillSheetMarkerIcon[id]:Show()
 			--print(markers[id].description)
 		elseif player ~= UnitName("player") and markerHidden == "true" then
 			skillSheetMarkerNames[id]:SetText("")
@@ -1647,6 +1651,9 @@ end
 			markers[id].health = ""
 			markers[id].description = ""
 			markers[id].hidden = true
+				if SkillSheetMarkerTransparent == true then
+					skillSheetMarkerIcon[id]:Hide()
+				end
 		end
     end
 

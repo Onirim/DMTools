@@ -4,7 +4,6 @@ local L = core.Locales[GetLocale()] or core.Locales["enUS"]
 local version = GetAddOnMetadata("SkillSheet", "Version")
 
 local markerSync = false
-local markerTransparent = false
 local colorWhite = "|cFFFFFFFF"
 local colorGrey = "|cFF7C7C7C"
 
@@ -48,7 +47,7 @@ f:SetScript("OnEvent", function(self, event)
     MarkerFramePage:SetFrameStrata("MEDIUM")
     MarkerFramePage:Hide()
     MarkerFramePage:SetScript("OnShow", function(self)
-        if markerTransparent == false then
+        if SkillSheetMarkerTransparent == false then
             MarkerFrame:Show()
         end
     end)
@@ -64,7 +63,7 @@ f:SetScript("OnEvent", function(self, event)
     MarkerFrame.Inset:Hide()
     -- Ajout d'un gestionnaire d'événements OnHide à MarkerFrame
     MarkerFrame:SetScript("OnHide", function(self)
-        if markerTransparent == false then
+        if SkillSheetMarkerTransparent == false then
             MarkerFramePage:Hide()
         end
     end)
@@ -104,6 +103,7 @@ f:SetScript("OnEvent", function(self, event)
                 ChatFrame1EditBox:SetFocus()
             end
         end)
+        skillSheetMarkerIcon[i] = icon
         
         -- Nom du marqueur
         local MarkerName = MarkerFramePage:CreateFontString(nil, "OVERLAY")
@@ -276,11 +276,12 @@ f:SetScript("OnEvent", function(self, event)
 					markers[i].power = ""
 					markers[i].health = ""
 					markers[i].description = ""
-                    markers[i].hidden = false
+                    markers[i].hidden = true
 					MarkerName:SetText((markers[i].hidden and colorGrey or colorWhite) .. markers[i].name)
 					MarkerPower:SetText((markers[i].hidden and colorGrey or colorWhite) .. markers[i].power)
 					MarkerHealth:SetText((markers[i].hidden and colorGrey or colorWhite) .. markers[i].health)
                     editFrame:Hide()
+                    SkillSheetSendMarkers(i) -- envoi des marqueurs (si synchro true)
 				end)
                  -- Seulement si le joueur est chef de groupe ou raid assist
                  if UnitIsGroupLeader("player") or UnitIsGroupAssistant("player") then
@@ -323,7 +324,7 @@ f:SetScript("OnEvent", function(self, event)
                 tooltip:SetOwner(self, "ANCHOR_RIGHT")  -- Définir le propriétaire du tooltip ici
                 tooltip:ClearLines()
                 if markers[i].description ~= nil then
-                    tooltip:SetMinimumWidth(300)
+                    --tooltip:SetMinimumWidth(300)
                     --[[ local concatenateDescription = ""
                     for _, detail in ipairs(descriptionDetails) do
                         if detail.name == orderedDescription[i].name and detail.descSkillID == orderedDescription[i].skillID then
@@ -376,7 +377,7 @@ f:SetScript("OnEvent", function(self, event)
     -- Boutons de transparence
     local markerTransparentButton = CreateFrame("CheckButton", "markerSyncButton", MarkerFramePage, "ChatConfigCheckButtonTemplate")
     markerTransparentButton:SetPoint("TOPLEFT", 220, -389)
-    markerTransparentButton:SetChecked(markerTransparent)
+    markerTransparentButton:SetChecked(SkillSheetMarkerTransparent)
     markerTransparentButton.tooltip = L["Marker Transparent Tooltip"]
     local markerTransparentText = MarkerFramePage:CreateFontString(nil, "OVERLAY")
     markerTransparentText:SetFontObject("GameFontNormal")
@@ -384,11 +385,19 @@ f:SetScript("OnEvent", function(self, event)
     markerTransparentText:SetText(L["Marker Trans?"])
     markerTransparentButton:SetScript("OnClick", function(self)
         if self:GetChecked() then
-            markerTransparent = true
+            SkillSheetMarkerTransparent = true
             MarkerFrame:Hide()
+            for i = 1 , 8 do
+                if markers[i].hidden == true  then
+                    skillSheetMarkerIcon[i]:Hide()
+                end
+            end
         else
-            markerTransparent = false
+            SkillSheetMarkerTransparent = false
             MarkerFrame:Show()
+            for i = 1 , 8 do
+                skillSheetMarkerIcon[i]:Show()
+            end
          end
     end)
 
