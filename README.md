@@ -9,15 +9,15 @@ You will find an interface with health status, ressources, skills (up to 45), sk
 How to use SkillSheet?
 
 - Left-click on the minimap button and the character sheet will opening
- - You can create 3 pages of skills or categories
- - You can manage your health and ressources (mana or something else)
- - You can roll your skills and get the result on any output you want (SkillSheet by default)
- - You can access to the GM panel (when you're in party or raid) and if you're the leader, you can manage turns (player turns, enemy turns and free turns)
+  - You can create 3 pages of skills or categories
+  - You can manage your health and ressources (mana or something else)
+  - You can roll your skills and get the result on any output you want (SkillSheet by default)
+  - You can access to the GM panel (when you're in party or raid) and if you're the leader, you can manage turns (player turns, enemy turns and free turns)
 - Right-click on the minimap button and the marker panel will opening
- - You can create markers with a description, power level and health
- - You're a player? You can click on a marker to sent its icon in the dialog box
- - You're a GM? You can click on GM mode for sync the players, left clicking on a marker icon for place it in the world, right clicking for deleting it
- - As a player, you can makes the panel transparent for a more immersive experience
+  - You can create markers with a description, power level and health
+  - You're a player? You can click on a marker to sent its icon in the dialog box
+  - You're a GM? You can click on GM mode for sync the players, left clicking on a marker icon for place it in the world, right clicking for deleting it
+  - As a player, you can makes the panel transparent for a more immersive experience
 - Type /skillsheet for more options like import/export or reset functions
 
 Enjoy!
