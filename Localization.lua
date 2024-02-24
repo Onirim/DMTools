@@ -145,7 +145,7 @@ L["enUS"] = {
 	["How to import"] = "Past here the data to import",
 	["Data Imported"] = "The character sheet has been imported successfully",
 	["Marker Transparent Tooltip"] = "Check this for making the panel translucent. The marker options will be unavailable",
-	["Marker Trans?"] = "Makes translucent"
+	["Marker Trans?"] = "Makes translucid"
  		}
 	
     -- Ajoutez d'autres langues ici...

@@ -327,22 +327,40 @@ f:SetScript("OnEvent", function(self, event)
 	displayTableRessourceValue:SetText("")
 	displayTableRessourceValue:SetWidth(100)
 
-	-- Création du tooltip
-	local tooltip = CreateFrame("GameTooltip", "MyTooltip", SkillFrameGM, "GameTooltipTemplate")
+	-- Tableau pour stocker les frames de ligne et leurs tooltips associés
+	local lineFrames = {}
+	local tooltips = {}
+
+	-- Création des frames de ligne et des tooltips associés
+	for i = 1 , 19 do
+		local lineFrame = CreateFrame("Frame", nil, SkillFrameGM)
+		lineFrame:SetSize(175, 16) -- Ajustez la taille en fonction de votre ligne
+		-- Ajustez la position en fonction de votre ligne et de l'index
+		lineFrame:SetPoint("TOPLEFT", displayTableName, "TOPLEFT", 100, -i * 24 +25)
+		lineFrame:EnableMouse(true)
+
+		-- Création de la texture
+		local texture = lineFrame:CreateTexture(nil, "BACKGROUND")
+		texture:SetAllPoints()
+		texture:SetColorTexture(1, 1, 1, 0) -- Les quatre paramètres sont Rouge, Vert, Bleu et Alpha (transparence)
+
+		
+		local tooltip = CreateFrame("GameTooltip", "MyTooltip"..i, SkillFrameGM, "GameTooltipTemplate")
+		-- Stocker le tooltip dans la frame pour pouvoir y accéder plus tard
+		lineFrame.tooltip = tooltip
+		-- Ajouter la frame et le tooltip aux tableaux
+		lineFrames[i] = lineFrame
+		tooltips[i] = tooltip
+	end
+
+	
 
 	-- Tableau pour stocker les frames de ligne
 	local function generateTooltips()
 		for i = 1 , 19 do
-			local lineFrame = CreateFrame("Frame", nil, SkillFrameGM)
-			lineFrame:SetSize(175, 16) -- Ajustez la taille en fonction de votre ligne
-			-- Ajustez la position en fonction de votre ligne et de l'index
-			lineFrame:SetPoint("TOPLEFT", displayTableName, "TOPLEFT", 100, -i * 24 +25)
-			lineFrame:EnableMouse(true)
-
-			-- Création de la texture
-			local texture = lineFrame:CreateTexture(nil, "BACKGROUND")
-			texture:SetAllPoints()
-			texture:SetColorTexture(1, 1, 1, 0) -- Les quatre paramètres sont Rouge, Vert, Bleu et Alpha (transparence)
+			-- Utiliser la frame et le tooltip existants
+			local lineFrame = lineFrames[i]
+			local tooltip = tooltips[i]
 
 			-- Affichage du tooltip lors du survol
 			lineFrame:SetScript("OnEnter", function(self)
@@ -355,12 +373,12 @@ f:SetScript("OnEvent", function(self, event)
 					if detail.name == orderedDescription[i].name and detail.descSkillID == orderedDescription[i].skillID then
 						concatenateDescription = concatenateDescription .. detail.descriptionPart
 					end
-
 				end
 				tooltip:AddLine(concatenateDescription, 1, 1, 1, true)
 				tooltip:Show()
 				end
 			end)
+			
 		
 			-- Cacher le tooltip lorsque la souris quitte la frame
 			lineFrame:SetScript("OnLeave", function(self)
@@ -369,6 +387,7 @@ f:SetScript("OnEvent", function(self, event)
 		
 		end
 	end
+
 
 
 	-- Mise à jour de la table
@@ -455,7 +474,7 @@ f:SetScript("OnEvent", function(self, event)
 			if outputChannel ~= "SKILLSHEET" and outputChannel ~= "RAID" and outputChannel ~= "SELF" then
 				SendChatMessage(L["has started a new turn"], outputChannel )
 			elseif outputChannel == "RAID" then
-				SendChatMessage(L["has started a new turn"], "RAID_WARNING")
+				SendChatMessage(playerName .. L["has started a new turn"], "RAID_WARNING")
 			end
 			confirmNewTurn:Hide()
 	end)
@@ -511,7 +530,7 @@ f:SetScript("OnEvent", function(self, event)
 			if outputChannel ~= "SKILLSHEET" and outputChannel ~= "RAID" and outputChannel ~= "SELF" then
 				SendChatMessage(L["has started a new enemy turn"], outputChannel )
 			elseif outputChannel == "RAID" then
-				SendChatMessage(L["has started a new enemy turn"], "RAID_WARNING")
+				SendChatMessage(playerName .. L["has started a new enemy turn"], "RAID_WARNING")
 			end
 			confirmNewEnemyTurn:Hide()
 	end)
@@ -567,7 +586,7 @@ f:SetScript("OnEvent", function(self, event)
 			if outputChannel ~= "SKILLSHEET" and outputChannel ~= "RAID" and outputChannel ~= "SELF" then
 				SendChatMessage(L["has started a new free turn"], outputChannel )
 			elseif outputChannel == "RAID" then
-				SendChatMessage(L["has started a new free turn"], "RAID_WARNING")
+				SendChatMessage(playerName .. L["has started a new free turn"], "RAID_WARNING")
 			end
 			confirmNewFreeTurn:Hide()
 	end)
@@ -705,6 +724,7 @@ f:SetScript("OnEvent", function(self, event)
 				SkillSheetEditIsOpened = true
 				-- Création de la fenêtre d'édition de compétence
 				local editFrame = CreateFrame("Frame", "editFrame", UIParent, "ButtonFrameTemplate")
+				editFrame:SetFrameStrata("HIGH")
 				editFrame:SetTitle(L["Skill Edit"])
 				editFrame:SetSize(400, 330) -- Largeur, Hauteur
 				editFrame:SetPoint("CENTER", 0, -0) -- Position sur l'écran
@@ -843,6 +863,7 @@ f:SetScript("OnEvent", function(self, event)
 					skillName:SetText("|cFFFFFFFF" .. MySkills[i].name)
 					diceValue:SetText("|cFFFFFFFF" .. MySkills[i].roll)
 					costValue:SetText("|cFFFFFFFF" .. MySkills[i].cost)
+					rollButton:Hide()
 				editFrame:Hide()
 				end)
 			end
@@ -961,6 +982,7 @@ for i = 16, 30 do
 			SkillSheetEditIsOpened = true
 			-- Création de la fenêtre d'édition de compétence
 			local editFrame = CreateFrame("Frame", "editFrame", UIParent, "ButtonFrameTemplate")
+			editFrame:SetFrameStrata("HIGH")
 			editFrame:SetTitle(L["Skill Edit"])
 			editFrame:SetSize(400, 330) -- Largeur, Hauteur
 			editFrame:SetPoint("CENTER", 0, -0) -- Position sur l'écran
@@ -1099,6 +1121,7 @@ for i = 16, 30 do
 				skillName:SetText("|cFFFFFFFF" .. MySkills[i].name)
 				diceValue:SetText("|cFFFFFFFF" .. MySkills[i].roll)
 				costValue:SetText("|cFFFFFFFF" .. MySkills[i].cost)
+				rollButton:Hide()
 			editFrame:Hide()
 			end)
 		end
@@ -1217,6 +1240,7 @@ for i = 31, 45 do
 			SkillSheetEditIsOpened = true
 			-- Création de la fenêtre d'édition de compétence
 			local editFrame = CreateFrame("Frame", "editFrame", UIParent, "ButtonFrameTemplate")
+			editFrame:SetFrameStrata("HIGH")
 			editFrame:SetTitle(L["Skill Edit"])
 			editFrame:SetSize(400, 330) -- Largeur, Hauteur
 			editFrame:SetPoint("CENTER", 0, -0) -- Position sur l'écran
@@ -1355,6 +1379,7 @@ for i = 31, 45 do
 				skillName:SetText("|cFFFFFFFF" .. MySkills[i].name)
 				diceValue:SetText("|cFFFFFFFF" .. MySkills[i].roll)
 				costValue:SetText("|cFFFFFFFF" .. MySkills[i].cost)
+				rollButton:Hide()
 			editFrame:Hide()
 			end)
 		end
@@ -1626,7 +1651,7 @@ end
 	end
 
 	-- Création du ticker
-	local ticker = C_Timer.NewTicker(5, sendInfo)
+	local ticker = C_Timer.NewTicker(7, sendInfo)
 
 	-- Fonction d'enregistrement des marqueurs
 	local function storeMarkers(player, id, markerName, markerPower, markerHealth, markerDescription, markerHidden)

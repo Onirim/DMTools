@@ -169,6 +169,7 @@ f:SetScript("OnEvent", function(self, event)
                 SkillSheetEditIsOpened = true
                 -- Création de la fenêtre d'édition de compétence
                 local editFrame = CreateFrame("Frame", "editFrame", UIParent, "ButtonFrameTemplate")
+                editFrame:SetFrameStrata("HIGH")
                 editFrame:SetTitle(L["Marker Details"])
                 editFrame:SetSize(400, 230) -- Largeur, Hauteur
                 editFrame:SetPoint("CENTER", 0, -0) -- Position sur l'écran
@@ -411,6 +412,9 @@ f:SetScript("OnEvent", function(self, event)
                     skillSheetMarkerIcon[i]:SetAttribute("macrotext1", "/wm " .. j) -- text for macro on left click
                     skillSheetMarkerIcon[i]:SetAttribute("type2", "macro") -- action button for right click
                     skillSheetMarkerIcon[i]:SetAttribute("macrotext2", "/cwm " .. j) -- text for macro on right click
+                    skillSheetMarkerIcon[i]:SetAttribute("shift-type1", "macro") -- action button for shift + left click
+                    skillSheetMarkerIcon[i]:SetAttribute("shift-macrotext1", "/run ChatFrame1EditBox:Insert('{rt" .. i .. "}'); ChatFrame1EditBox:Show(); ChatFrame1EditBox:SetFocus();") -- text for macro on shift + left click
+
                 end
             elseif UnitInRaid("player") or UnitInParty("player") then
                 markerSync = false
@@ -437,6 +441,8 @@ f:SetScript("OnEvent", function(self, event)
                     skillSheetMarkerIcon[i]:SetAttribute("macrotext1", nil) -- text for macro on left click
                     skillSheetMarkerIcon[i]:SetAttribute("type2", nil) -- action button for right click
                     skillSheetMarkerIcon[i]:SetAttribute("macrotext2", nil) -- text for macro on right click
+                    skillSheetMarkerIcon[i]:SetAttribute("shift-type1", nil)
+                    skillSheetMarkerIcon[i]:SetAttribute("shift-macrotext1", nil)
                 end
                 markerSyncButton:SetChecked(markerSync)
                 print(L["You need to be leader or assist"])
@@ -460,11 +466,12 @@ f:SetScript("OnEvent", function(self, event)
                     else 
                         j = 8
                     end
-                    print("j'ai décoché !")
                     skillSheetMarkerIcon[i]:SetAttribute("type1", nil) -- action button
                     skillSheetMarkerIcon[i]:SetAttribute("macrotext1", nil) -- text for macro on left click
                     skillSheetMarkerIcon[i]:SetAttribute("type2", nil) -- action button for right click
                     skillSheetMarkerIcon[i]:SetAttribute("macrotext2", nil) -- text for macro on right click
+                    skillSheetMarkerIcon[i]:SetAttribute("shift-type1", nil)
+                    skillSheetMarkerIcon[i]:SetAttribute("shift-macrotext1", nil)
                 end
                 markerSync = false
                 markerSyncButton:SetChecked(markerSync)
@@ -494,6 +501,8 @@ f:SetScript("OnEvent", function(self, event)
                 skillSheetMarkerIcon[i]:SetAttribute("macrotext1", nil) -- text for macro on left click
                 skillSheetMarkerIcon[i]:SetAttribute("type2", nil) -- action button for right click
                 skillSheetMarkerIcon[i]:SetAttribute("macrotext2", nil) -- text for macro on right click
+                skillSheetMarkerIcon[i]:SetAttribute("shift-type1", nil)
+                skillSheetMarkerIcon[i]:SetAttribute("shift-macrotext1", nil)
             end
             markerSync = false
             --markerSyncButton:SetChecked(markerSync)   
