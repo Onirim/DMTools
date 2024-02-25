@@ -73,7 +73,27 @@ L["frFR"] = {
 	["How to import"] = "Collez ici les données à importer",
 	["Data Imported"] = "La fiche de personnage a été importée avec succès",
 	["Marker Transparent Tooltip"] = "Cochez cette case pour rendre le panneau translucide. Les options de gestion des marqueurs ne seront plus disponibles.",
-	["Marker Trans?"] = "Rendre translucide"
+	["Marker Trans?"] = "Rendre translucide",
+	["Announcement"] = [[SkillSheet devient |cFF7cfc00DMTools|r !
+
+Vous pouvez dès à présent installer |cFF7cfc00DMTools|r depuis Curse Forge.
+
+Pour conserver vos données vous pouvez :
+
+- Soit exporter votre fiche via la fonction /SkillSheet export, installer |cFF7cfc00DMTools|r, et importer la fiche via la fonction /DMTools import.
+- Soit installer |cFF7cfc00DMTools|r et le lancer en même temps que SkillSheet. |cFF7cfc00DMTools|r héritera alors de vos données SkillSheet.
+
+N'oubliez pas de désinstaller SkillSheet une fois que vous aurez migré sur |cFF7cfc00DMTools|r.
+
+Pourquoi changer de nom ?
+
+L'add-on a parcouru une longue route en peu de temps. Lui qui avait pour vocation de n'offrir qu'une fiche de compétences adaptable s'est transformé en véritable outil multifonctions pour maître de jeu et joueurs, incluant bien sûr la fiche de personnage, mais également un affichage des jets et des résultats, un partage en temps réel des points de vie et de ressources, une gestion des tours joueurs, ennemis et libres, un panneau de contrôle des marqueurs, etc. 
+
+Avec tout cela (et peut être davantage à venir), le nom de l'add-on n'est plus vraiment représentatif de ce qu'il propose.
+
+Il est encore temps de revoir le nom de l'add-on afin qu'il reflète davantage son usage, et son nouveau nom est |cFF7cfc00DMTools|r (Dungeon Master Tools).
+
+Merci à tous pour le soutient apporté, et à bientôt sur |cFF7cfc00DMTools|r !]]
 		}
 	
 L["enUS"] = {
@@ -145,7 +165,27 @@ L["enUS"] = {
 	["How to import"] = "Past here the data to import",
 	["Data Imported"] = "The character sheet has been imported successfully",
 	["Marker Transparent Tooltip"] = "Check this for making the panel translucent. The marker options will be unavailable",
-	["Marker Trans?"] = "Makes translucid"
+	["Marker Trans?"] = "Makes translucid",
+	["Announcement"] = [[SkillSheet becomes |cFF7cfc00DMTools|r!
+
+You can now install |cFF7cfc00DMTools|r from Curse Forge.
+
+To keep your data you can:
+
+- Either export your sheet via the /SkillSheet export function, install |cFF7cfc00DMTools|r, and import the sheet via the /DMTools import function.
+- Or install |cFF7cfc00DMTools|r and launch it at the same time as SkillSheet. |cFF7cfc00DMTools|r will then inherit your SkillSheet data.
+
+Don't forget to uninstall SkillSheet once you have migrated to |cFF7cfc00DMTools|r.
+
+Why change the name?
+
+The add-on has come a long way in a short time. What was originally intended to offer only an adaptable skill sheet has transformed into a true multifunctional tool for game masters and players, including of course the character sheet, but also a display of rolls and results, real-time sharing of health points and resources, management of player, enemy and free turns, a control panel for markers, etc.
+
+With all this (and perhaps more to come), the name of the add-on is no longer really representative of what it offers.
+
+There is still time to review the name of the add-on so that it reflects its use more, and its new name is |cFF7cfc00DMTools|r (Dungeon Master Tools).
+
+Thank you all for the support provided, and see you soon on |cFF7cfc00DMTools|r!]]
  		}
 	
     -- Ajoutez d'autres langues ici...

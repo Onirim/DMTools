@@ -103,7 +103,27 @@ SkillSheetRollButton = {}
 SkillSheetNewMySkills = {}
 SkillSheetMarkerTransparent = false
 
+function SkillSheetAnnouncement()
 
+	-- Création de la fenêtre
+	local announcementFrame = CreateFrame("Frame", "SkillSheetAnnouncement", UIParent, "BasicFrameTemplateWithInset")
+
+	-- Positionnement de la fenêtre
+	announcementFrame:SetPoint("CENTER") -- Changez ceci pour modifier la position de la fenêtre
+	announcementFrame:SetSize(450, 440) -- Changez ceci pour modifier la taille de la fenêtre
+
+	-- Ajout du texte
+	local text = announcementFrame:CreateFontString(nil, "OVERLAY")
+	text:SetFontObject("GameFontHighlight")
+	text:SetWidth(announcementFrame:GetWidth()-20) -- Définit la largeur pour le retour à la ligne
+	text:SetJustifyH("LEFT") -- Justifie le texte à gauche
+	text:SetPoint("TOPLEFT", announcementFrame, "TOPLEFT", 10, -30) -- Positionne le texte en haut à gauche
+	text:SetText(L["Announcement"]) -- Utilisez votre variable ici
+
+	-- Affichage de la fenêtre
+	announcementFrame:Show()
+
+end
 
 ----------------------------
 --   MESSAGE D'ACCUEIL    --
@@ -112,6 +132,7 @@ local f = CreateFrame("Frame")
 f:RegisterEvent("PLAYER_LOGIN")
 f:SetScript("OnEvent", function()
     print("|cFFdaa520SkillSheet " .. version .. L["SkillSheet is loaded"])
+	SkillSheetAnnouncement()
 end)
 
 --------------------------------------------
