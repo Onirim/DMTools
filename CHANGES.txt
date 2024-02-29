@@ -1,10 +1,61 @@
-lightweight tag 84e51b41e8f58f92b2d99df435629d174ef04473 2.3.3
-Author:	GitHub <noreply@github.com>
-Date:	Thu Feb 1 19:31:01 2024 +0100
-
-commit 84e51b41e8f58f92b2d99df435629d174ef04473
-Author: Onirim <onirim@outlook.com>
-Date:   Thu Feb 1 19:31:01 2024 +0100
-
-    Add files via upload
-
+### Version 2.4.2
+- Fixed some typos and alignments in tables for english language
+### Version 2.4.1
+- Adding a line in the minimap tooltip
+- Fixing some typos with english translation
+### Version 2.4.0
+- SkillSheet becomes DMTools, because it's a better name for what it does now
+- All /SkillSheet functions are now /DMTools functions
+- Renaming Skills to Actions in the add-on interface
+- DMTools can now save the panel position
+- In DM mode, you can now insert a marker icon in the chatbox with shift+left click
+- Fixing a bug who makes all the Wow interface crash after some times (too many frames created)
+- Fixing a bug with marker details and marker panel who don't overlap well
+- Fixing a bug with raid announcement who not displaying the character name
+- Fixing a bug with deleting action button who doesn't disactivate the roll button
+### Version 2.3.3
+- Adding a new control panel for playing with markers! Try it with a right click on the minimap button!
+- Change the /skill command for /skillsheet
+- Adding export and import functions for the character sheet
+- Adding the skill description on hover in the GM panel
+### Version 2.3.2-beta
+- Icons are now invisible in the marker panel when unused of the panel is set to transparent
+### Version 2.3.1-beta
+- Fixed a problem with transparent option in marker panel
+### Version 2.3.0-beta
+- Adding an option for makes the marker panel translucent
+- Adding the marker description in overlay in the marker panel
+### Version 2.2.1-beta
+- Fixed a problem with the tooltip when a skill is used multiple time
+- Fixed a problem with the tooltip when the skill list is emptied
+### Version 2.2.0-beta
+- Adding the skill description on hover in the GM panel
+### Version 2.1.0-beta
+- Change the /skill command for /skillsheet
+- Adding export and import functions for the character sheet
+### Version 2.0.1-beta
+- Fixing an error message displaying when leaving the party when in sync enabled
+- Fixing the lost of chat box focus when clicking on marker icons in the marker panel
+- Added an option for keeping a marker secret (actif by default)
+- Adding the possibility to have more than one marker sync enabled (the others need to be raid assist)
+### Version 2.0.0-beta
+- Adding a new control panel for playing with markers
+### Version 1.3.0
+- Adding a new Free Turn option in GM panel
+- Adding the possibility to define category skill separators
+- Now emptying the skill and dice results in GM panel on a new player turn, for clarity
+### Version 1.2.0
+- Fixing some column alignments in GM interface
+- Fixing a bug when there is only 1 player to roll in the GM interface
+- Adding a channel selection for output and communications
+- Adding a self channel for rolling for yourself (useful for some GM)
+### Version 1.1.3
+- Updating for World of Warcraft 10.2.5
+### Version 1.1.2
+- Fixing a bug with minimap icon loading for some players
+### Version 1.1.1
+- Fixed a bug when the player is not in group or raid but is in an instance
+### Version 1.1.0
+- Adding a player turn and enemy turn gestion in GM panel
+### Version 1.0.0
+- First release!

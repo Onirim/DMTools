@@ -1,7 +1,7 @@
 -- Gestion de la localisation
 local _, core = ...
 local L = core.Locales[GetLocale()] or core.Locales["enUS"]
-local version = GetAddOnMetadata("SkillSheet", "Version")
+local version = GetAddOnMetadata("DMTools", "Version")
 
  
 
@@ -408,7 +408,7 @@ end
 
 
 
-function SkillSheetExportData(MySkills)
+function DMToolsExportData(MySkills)
     -- Convertir la table en chaîne JSON
     local exportData = json.encode(MySkills)
 
@@ -426,7 +426,7 @@ function SkillSheetExportData(MySkills)
     exportFrame:SetScript("OnDragStop", exportFrame.StopMovingOrSizing)
     exportFrame.Inset:Hide()
     exportFrame:SetScript("OnHide", function(self)
-        SkillSheetEditIsOpened = false  -- Change la valeur de la variable lorsque la fenêtre est fermée
+        DMToolsEditIsOpened = false  -- Change la valeur de la variable lorsque la fenêtre est fermée
     end)
     local scrollFrame = CreateFrame("ScrollFrame", nil, exportFrame, "UIPanelScrollFrameTemplate")
     scrollFrame:SetSize(358, 225)
@@ -463,22 +463,22 @@ function SkillSheetExportData(MySkills)
     scrollFrame:SetScrollChild(exportFrameBox)
 end
 
-function SkillSheetReset(MySkills)
+function DMToolsReset(MySkills)
     for i = 1, 45 do
-        SkillSheetSkillName[i]:SetText("")
+        DMToolsSkillName[i]:SetText("")
         MySkills[i].name = ""
-        SkillSheetDiceValue[i]:SetText("")
+        DMToolsDiceValue[i]:SetText("")
         MySkills[i].roll = ""
-        SkillSheetCostValue[i]:SetText("")
+        DMToolsCostValue[i]:SetText("")
         MySkills[i].cost = ""
         MySkills[i].description = ""
         MySkills[i].isCategory = false
-        SkillSheetRollButton[i]:Hide()
+        DMToolsRollButton[i]:Hide()
     end
     print(L["Skills deleted"])
 end
 
-function SkillSheetImportData(MySkills)
+function DMToolsImportData(MySkills)
     -- Convertir la table en chaîne JSON
     local exportData = json.encode(MySkills)
 
@@ -496,7 +496,7 @@ function SkillSheetImportData(MySkills)
     importFrame:SetScript("OnDragStop", importFrame.StopMovingOrSizing)
     importFrame.Inset:Hide()
     importFrame:SetScript("OnHide", function(self)
-        SkillSheetEditIsOpened = false  -- Change la valeur de la variable lorsque la fenêtre est fermée
+        DMToolsEditIsOpened = false  -- Change la valeur de la variable lorsque la fenêtre est fermée
     end)
     local scrollFrame = CreateFrame("ScrollFrame", nil, importFrame, "UIPanelScrollFrameTemplate")
     scrollFrame:SetSize(358, 225)
@@ -540,25 +540,25 @@ function SkillSheetImportData(MySkills)
     saveButton:SetScript("OnClick", function()
         -- Enregistrement des données
         local importData = importFrameBox:GetText()
-        SkillSheetNewMySkills = json.decode(importData)
-        _G.MySkills = SkillSheetNewMySkills
-        MySkills = SkillSheetNewMySkills
+        DMToolsNewMySkills = json.decode(importData)
+        _G.MySkills = DMToolsNewMySkills
+        MySkills = DMToolsNewMySkills
    
         print(MySkills[1].name)
         for i = 1, 45 do
-            SkillSheetSkillName[i]:SetText("|cFFFFFFFF" .. MySkills[i].name)
-            SkillSheetDiceValue[i]:SetText("|cFFFFFFFF" .. MySkills[i].roll)
-            SkillSheetCostValue[i]:SetText("|cFFFFFFFF" .. MySkills[i].cost)
-            if SkillSheetSkillName[i].name == "" or MySkills[i].isCategory == true then
-                SkillSheetRollButton[i]:Hide()
+            DMToolsSkillName[i]:SetText("|cFFFFFFFF" .. MySkills[i].name)
+            DMToolsDiceValue[i]:SetText("|cFFFFFFFF" .. MySkills[i].roll)
+            DMToolsCostValue[i]:SetText("|cFFFFFFFF" .. MySkills[i].cost)
+            if DMToolsSkillName[i].name == "" or MySkills[i].isCategory == true then
+                DMToolsRollButton[i]:Hide()
                 else 
-                SkillSheetRollButton[i]:Show()
+                DMToolsRollButton[i]:Show()
             end
             if MySkills[i].isCategory == true then
-                SkillSheetSkillName[i]:SetText("|cFFCAA94B" .. string.upper(MySkills[i].name))
-                SkillSheetSkillName[i]:SetFontObject("GameFontNormalLarge")
+                DMToolsSkillName[i]:SetText("|cFFCAA94B" .. string.upper(MySkills[i].name))
+                DMToolsSkillName[i]:SetFontObject("GameFontNormalLarge")
             else 
-                SkillSheetSkillName[i]:SetFontObject("GameFontNormal")
+                DMToolsSkillName[i]:SetFontObject("GameFontNormal")
             end
         end
         importFrame:Hide()

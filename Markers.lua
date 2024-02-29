@@ -1,7 +1,7 @@
 -- Gestion de la localisation
 local _, core = ...
 local L = core.Locales[GetLocale()] or core.Locales["enUS"]
-local version = GetAddOnMetadata("SkillSheet", "Version")
+local version = GetAddOnMetadata("DMTools", "Version")
 
 local markerSync = false
 local colorWhite = "|cFFFFFFFF"
@@ -47,15 +47,23 @@ f:SetScript("OnEvent", function(self, event)
     MarkerFramePage:SetFrameStrata("MEDIUM")
     MarkerFramePage:Hide()
     MarkerFramePage:SetScript("OnShow", function(self)
-        if SkillSheetMarkerTransparent == false then
+        if DMToolsMarkerTransparent == false then
             MarkerFrame:Show()
         end
     end)
+    function MarkerFramePage:OnDragStop()
+		self:StopMovingOrSizing()
+		-- Enregistrer la nouvelle position dans la table
+		local point, _, _, x, y = self:GetPoint()
+		DMToolsPanelPosition[self:GetName()] = {point = point, x = x, y = y}
+	end
+	MarkerFramePage:SetScript("OnDragStart", SkillFrame.StartMoving)
+	MarkerFramePage:SetScript("OnDragStop", SkillFrame.OnDragStop)
     
 
     -- Création du cadre
     local MarkerFrame = CreateFrame("Frame", "MarkerFrame", MarkerFramePage, "ButtonFrameTemplate")
-    MarkerFrame:SetTitle(L["SkillSheet NPC"])
+    MarkerFrame:SetTitle(L["DMTools NPC"])
     MarkerFrame:SetPortraitToAsset("Interface\\ICONS\\inv_misc_grouplooking")
     MarkerFrame:SetSize(380, 420) -- Largeur, Hauteur
     MarkerFrame:SetPoint("CENTER", 50, 0) -- Position sur l'écran
@@ -63,7 +71,7 @@ f:SetScript("OnEvent", function(self, event)
     MarkerFrame.Inset:Hide()
     -- Ajout d'un gestionnaire d'événements OnHide à MarkerFrame
     MarkerFrame:SetScript("OnHide", function(self)
-        if SkillSheetMarkerTransparent == false then
+        if DMToolsMarkerTransparent == false then
             MarkerFramePage:Hide()
         end
     end)
@@ -129,7 +137,7 @@ f:SetScript("OnEvent", function(self, event)
                 end
             end
         end)
-        skillSheetMarkerIcon[i] = icon
+        DMToolsMarkerIcon[i] = icon
         
         -- Nom du marqueur
         local MarkerName = MarkerFramePage:CreateFontString(nil, "OVERLAY")
@@ -137,7 +145,7 @@ f:SetScript("OnEvent", function(self, event)
         MarkerName:SetPoint("TOPLEFT", 50, -40 * i - 30)
         MarkerName:SetText((markers[i].hidden and colorGrey or colorWhite) .. markers[i].name)
         MarkerName:SetFontObject("GameFontNormal")
-        skillSheetMarkerNames[i] = MarkerName
+        DMToolsMarkerNames[i] = MarkerName
 
         -- Puissance du marqueur
         local MarkerPower = MarkerFramePage:CreateFontString(nil, "OVERLAY")
@@ -145,7 +153,7 @@ f:SetScript("OnEvent", function(self, event)
         MarkerPower:SetPoint("TOPLEFT", 205, -40 * i - 30)
         MarkerPower:SetText((markers[i].hidden and colorGrey or colorWhite) .. markers[i].power)
         MarkerPower:SetFontObject("GameFontNormal")
-        skillSheetMarkerPowers[i] = MarkerPower
+        DMToolsMarkerPowers[i] = MarkerPower
 
         -- Santé du marqueur
         local MarkerHealth = MarkerFramePage:CreateFontString(nil, "OVERLAY")
@@ -153,20 +161,20 @@ f:SetScript("OnEvent", function(self, event)
         MarkerHealth:SetPoint("TOPLEFT", 280, -40 * i - 30)
         MarkerHealth:SetText((markers[i].hidden and colorGrey or colorWhite) .. markers[i].health)
         MarkerHealth:SetFontObject("GameFontNormal")
-        skillSheetMarkerHealth[i] = MarkerHealth
+        DMToolsMarkerHealth[i] = MarkerHealth
 
         -- Description du marqueur
-        skillSheetMarkerDescription[i] = markers[i].description
+        DMToolsMarkerDescription[i] = markers[i].description
 
         -- Bouton d'édition
-		SkillSheetEditIsOpened = false
+		DMToolsEditIsOpened = false
 		local editButton = CreateFrame("Button", nil, MarkerFrame, "GameMenuButtonTemplate")
 		editButton:SetPoint("TOPLEFT", 350, -40 * i - 25)
 		editButton:SetSize(25, 25)
 		editButton:SetText("?")
         editButton:SetScript("OnClick", function()
-            if SkillSheetEditIsOpened == false then
-                SkillSheetEditIsOpened = true
+            if DMToolsEditIsOpened == false then
+                DMToolsEditIsOpened = true
                 -- Création de la fenêtre d'édition de compétence
                 local editFrame = CreateFrame("Frame", "editFrame", UIParent, "ButtonFrameTemplate")
                 editFrame:SetFrameStrata("HIGH")
@@ -182,7 +190,7 @@ f:SetScript("OnEvent", function(self, event)
                 editFrame:SetScript("OnDragStop", editFrame.StopMovingOrSizing)
                 editFrame.Inset:Hide()
                 editFrame:SetScript("OnHide", function(self)
-                    SkillSheetEditIsOpened = false  -- Change la valeur de la variable lorsque la fenêtre est fermée
+                    DMToolsEditIsOpened = false  -- Change la valeur de la variable lorsque la fenêtre est fermée
                 end)
                 local icon = editFrame:CreateTexture(nil, "OVERLAY")
                 icon:SetTexture("Interface\\TargetingFrame\\UI-RaidTargetingIcon_" .. i)
@@ -290,7 +298,7 @@ f:SetScript("OnEvent", function(self, event)
 					MarkerPower:SetText((markers[i].hidden and colorGrey or colorWhite) .. markers[i].power)
 					MarkerHealth:SetText((markers[i].hidden and colorGrey or colorWhite) .. markers[i].health)
                     editFrame:Hide()
-                    SkillSheetSendMarkers(i) -- envoi des marqueurs (si synchro true)
+                    DMToolsSendMarkers(i) -- envoi des marqueurs (si synchro true)
                     end)
 
 				-- Bouton "Supprimer"
@@ -308,7 +316,7 @@ f:SetScript("OnEvent", function(self, event)
 					MarkerPower:SetText((markers[i].hidden and colorGrey or colorWhite) .. markers[i].power)
 					MarkerHealth:SetText((markers[i].hidden and colorGrey or colorWhite) .. markers[i].health)
                     editFrame:Hide()
-                    SkillSheetSendMarkers(i) -- envoi des marqueurs (si synchro true)
+                    DMToolsSendMarkers(i) -- envoi des marqueurs (si synchro true)
 				end)
                  -- Seulement si le joueur est chef de groupe ou raid assist
                  if UnitIsGroupLeader("player") or UnitIsGroupAssistant("player") then
@@ -332,7 +340,7 @@ f:SetScript("OnEvent", function(self, event)
     local tooltip = CreateFrame("GameTooltip", "MarkerTooltip", MarkerFramePage, "GameTooltipTemplate")
 
     -- Tableau pour stocker les frames de ligne
-    local function SkillSheetGenerateMarkerTooltips()
+    local function DMToolsGenerateMarkerTooltips()
         for i = 1 , 8 do
             local lineFrame = CreateFrame("Frame", nil, MarkerFramePage)
             lineFrame:SetSize(150, 25) -- Ajustez la taille en fonction de votre ligne
@@ -373,7 +381,7 @@ f:SetScript("OnEvent", function(self, event)
         
         end
     end
-    SkillSheetGenerateMarkerTooltips()
+    DMToolsGenerateMarkerTooltips()
     
     -- Boutons de synchronisation des marqueurs
     --local markerSync = false -- gère la synchronisation des marqueurs
@@ -408,12 +416,12 @@ f:SetScript("OnEvent", function(self, event)
                     else 
                         j = 8
                     end
-                    skillSheetMarkerIcon[i]:SetAttribute("type1", "macro") -- action button
-                    skillSheetMarkerIcon[i]:SetAttribute("macrotext1", "/wm " .. j) -- text for macro on left click
-                    skillSheetMarkerIcon[i]:SetAttribute("type2", "macro") -- action button for right click
-                    skillSheetMarkerIcon[i]:SetAttribute("macrotext2", "/cwm " .. j) -- text for macro on right click
-                    skillSheetMarkerIcon[i]:SetAttribute("shift-type1", "macro") -- action button for shift + left click
-                    skillSheetMarkerIcon[i]:SetAttribute("shift-macrotext1", "/run ChatFrame1EditBox:Insert('{rt" .. i .. "}'); ChatFrame1EditBox:Show(); ChatFrame1EditBox:SetFocus();") -- text for macro on shift + left click
+                    DMToolsMarkerIcon[i]:SetAttribute("type1", "macro") -- action button
+                    DMToolsMarkerIcon[i]:SetAttribute("macrotext1", "/wm " .. j) -- text for macro on left click
+                    DMToolsMarkerIcon[i]:SetAttribute("type2", "macro") -- action button for right click
+                    DMToolsMarkerIcon[i]:SetAttribute("macrotext2", "/cwm " .. j) -- text for macro on right click
+                    DMToolsMarkerIcon[i]:SetAttribute("shift-type1", "macro") -- action button for shift + left click
+                    DMToolsMarkerIcon[i]:SetAttribute("shift-macrotext1", "/run ChatFrame1EditBox:Insert('{rt" .. i .. "}'); ChatFrame1EditBox:Show(); ChatFrame1EditBox:SetFocus();") -- text for macro on shift + left click
 
                 end
             elseif UnitInRaid("player") or UnitInParty("player") then
@@ -437,12 +445,12 @@ f:SetScript("OnEvent", function(self, event)
                     else 
                         j = 8
                     end
-                    skillSheetMarkerIcon[i]:SetAttribute("type1", nil) -- action button
-                    skillSheetMarkerIcon[i]:SetAttribute("macrotext1", nil) -- text for macro on left click
-                    skillSheetMarkerIcon[i]:SetAttribute("type2", nil) -- action button for right click
-                    skillSheetMarkerIcon[i]:SetAttribute("macrotext2", nil) -- text for macro on right click
-                    skillSheetMarkerIcon[i]:SetAttribute("shift-type1", nil)
-                    skillSheetMarkerIcon[i]:SetAttribute("shift-macrotext1", nil)
+                    DMToolsMarkerIcon[i]:SetAttribute("type1", nil) -- action button
+                    DMToolsMarkerIcon[i]:SetAttribute("macrotext1", nil) -- text for macro on left click
+                    DMToolsMarkerIcon[i]:SetAttribute("type2", nil) -- action button for right click
+                    DMToolsMarkerIcon[i]:SetAttribute("macrotext2", nil) -- text for macro on right click
+                    DMToolsMarkerIcon[i]:SetAttribute("shift-type1", nil)
+                    DMToolsMarkerIcon[i]:SetAttribute("shift-macrotext1", nil)
                 end
                 markerSyncButton:SetChecked(markerSync)
                 print(L["You need to be leader or assist"])
@@ -466,12 +474,12 @@ f:SetScript("OnEvent", function(self, event)
                     else 
                         j = 8
                     end
-                    skillSheetMarkerIcon[i]:SetAttribute("type1", nil) -- action button
-                    skillSheetMarkerIcon[i]:SetAttribute("macrotext1", nil) -- text for macro on left click
-                    skillSheetMarkerIcon[i]:SetAttribute("type2", nil) -- action button for right click
-                    skillSheetMarkerIcon[i]:SetAttribute("macrotext2", nil) -- text for macro on right click
-                    skillSheetMarkerIcon[i]:SetAttribute("shift-type1", nil)
-                    skillSheetMarkerIcon[i]:SetAttribute("shift-macrotext1", nil)
+                    DMToolsMarkerIcon[i]:SetAttribute("type1", nil) -- action button
+                    DMToolsMarkerIcon[i]:SetAttribute("macrotext1", nil) -- text for macro on left click
+                    DMToolsMarkerIcon[i]:SetAttribute("type2", nil) -- action button for right click
+                    DMToolsMarkerIcon[i]:SetAttribute("macrotext2", nil) -- text for macro on right click
+                    DMToolsMarkerIcon[i]:SetAttribute("shift-type1", nil)
+                    DMToolsMarkerIcon[i]:SetAttribute("shift-macrotext1", nil)
                 end
                 markerSync = false
                 markerSyncButton:SetChecked(markerSync)
@@ -497,12 +505,12 @@ f:SetScript("OnEvent", function(self, event)
                 else 
                     j = 8
                 end
-                skillSheetMarkerIcon[i]:SetAttribute("type1", nil) -- action button
-                skillSheetMarkerIcon[i]:SetAttribute("macrotext1", nil) -- text for macro on left click
-                skillSheetMarkerIcon[i]:SetAttribute("type2", nil) -- action button for right click
-                skillSheetMarkerIcon[i]:SetAttribute("macrotext2", nil) -- text for macro on right click
-                skillSheetMarkerIcon[i]:SetAttribute("shift-type1", nil)
-                skillSheetMarkerIcon[i]:SetAttribute("shift-macrotext1", nil)
+                DMToolsMarkerIcon[i]:SetAttribute("type1", nil) -- action button
+                DMToolsMarkerIcon[i]:SetAttribute("macrotext1", nil) -- text for macro on left click
+                DMToolsMarkerIcon[i]:SetAttribute("type2", nil) -- action button for right click
+                DMToolsMarkerIcon[i]:SetAttribute("macrotext2", nil) -- text for macro on right click
+                DMToolsMarkerIcon[i]:SetAttribute("shift-type1", nil)
+                DMToolsMarkerIcon[i]:SetAttribute("shift-macrotext1", nil)
             end
             markerSync = false
             --markerSyncButton:SetChecked(markerSync)   
@@ -512,7 +520,7 @@ f:SetScript("OnEvent", function(self, event)
     -- Boutons de transparence
     local markerTransparentButton = CreateFrame("CheckButton", "markerSyncButton", MarkerFramePage, "ChatConfigCheckButtonTemplate")
     markerTransparentButton:SetPoint("TOPLEFT", 220, -389)
-    markerTransparentButton:SetChecked(SkillSheetMarkerTransparent)
+    markerTransparentButton:SetChecked(DMToolsMarkerTransparent)
     markerTransparentButton.tooltip = L["Marker Transparent Tooltip"]
     local markerTransparentText = MarkerFramePage:CreateFontString(nil, "OVERLAY")
     markerTransparentText:SetFontObject("GameFontNormal")
@@ -520,18 +528,18 @@ f:SetScript("OnEvent", function(self, event)
     markerTransparentText:SetText(L["Marker Trans?"])
     markerTransparentButton:SetScript("OnClick", function(self)
         if self:GetChecked() then
-            SkillSheetMarkerTransparent = true
+            DMToolsMarkerTransparent = true
             MarkerFrame:Hide()
             for i = 1 , 8 do
                 if markers[i].hidden == true  then
-                    skillSheetMarkerIcon[i]:Hide()
+                    DMToolsMarkerIcon[i]:Hide()
                 end
             end
         else
-            SkillSheetMarkerTransparent = false
+            DMToolsMarkerTransparent = false
             MarkerFrame:Show()
             for i = 1 , 8 do
-                skillSheetMarkerIcon[i]:Show()
+                DMToolsMarkerIcon[i]:Show()
             end
          end
     end)
@@ -540,9 +548,9 @@ f:SetScript("OnEvent", function(self, event)
     if IsInRaid() then
         channel = "RAID"
     end
-    function SkillSheetSendMarkers(id)
+    function DMToolsSendMarkers(id)
         if markerSync == true and (UnitInRaid("player") or UnitInParty("player")) and (UnitIsGroupLeader("player") or UnitIsGroupAssistant("player")) then
-            C_ChatInfo.SendAddonMessage("SkillSheet", "MARKERS@" .. UnitName("player") .. "@" .. id .. "@" .. markers[id].name .. "@" .. markers[id].power .. "@" .. markers[id].health .. "@" .. markers[id].description .. "@" .. tostring(markers[id].hidden), channel)
+            C_ChatInfo.SendAddonMessage("DMTools", "MARKERS@" .. UnitName("player") .. "@" .. id .. "@" .. markers[id].name .. "@" .. markers[id].power .. "@" .. markers[id].health .. "@" .. markers[id].description .. "@" .. tostring(markers[id].hidden), channel)
         elseif markerSync == true and markers[id].hidden == false then
             markerSync = false
             markerSyncButton:SetChecked(markerSync)
@@ -554,7 +562,7 @@ f:SetScript("OnEvent", function(self, event)
     local function cycleSync()
         for i = 1 , 8 do
             C_Timer.After(i*2, function()
-            SkillSheetSendMarkers(i)
+            DMToolsSendMarkers(i)
             end)
         end
     end

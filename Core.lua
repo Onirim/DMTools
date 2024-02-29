@@ -1,9 +1,9 @@
 -- Gestion de la localisation
 local _, core = ...
 local L = core.Locales[GetLocale()] or core.Locales["enUS"]
-local version = GetAddOnMetadata("SkillSheet", "Version")
+local version = GetAddOnMetadata("DMTools", "Version")
 -- Enregistrement du préfixe de l'addon
-C_ChatInfo.RegisterAddonMessagePrefix("SkillSheet")
+C_ChatInfo.RegisterAddonMessagePrefix("DMTools")
 
 ---------------
 -- FONCTIONS --
@@ -32,7 +32,7 @@ end
 -- Création du bouton de minimap
 
 local f = CreateFrame("Frame")
-f:RegisterEvent("VARIABLES_LOADED")
+f:RegisterEvent("PLAYER_LOGIN")
 f:SetScript("OnEvent", function(self, event)
 local icon = LibStub("LibDBIcon-1.0")
     if type(miniMapDb) ~= "table" then
@@ -41,12 +41,12 @@ local icon = LibStub("LibDBIcon-1.0")
     if type(miniMapDb.minimapIcon) ~= "table" then
         miniMapDb.minimapIcon = {}
     end
-    SkillSheetCreateMinimapButton(miniMapDb.minimapIcon)
+    DMToolsCreateMinimapButton(miniMapDb.minimapIcon)
 end)
 
-function SkillSheetCreateMinimapButton()
+function DMToolsCreateMinimapButton()
     local ldb = LibStub("LibDataBroker-1.1")
-    local minimapButton = ldb:NewDataObject('SkillSheetMinimapIcon', { --rename this more unique to your addon
+    local minimapButton = ldb:NewDataObject('DMToolsMinimapIcon', { --rename this more unique to your addon
         type = "launcher",
         icon = 633008,
         OnClick = function(_, button)
@@ -66,20 +66,21 @@ function SkillSheetCreateMinimapButton()
         end,
         OnTooltipShow = function(tooltip)
             if not tooltip or not tooltip.AddLine then return end
-            tooltip:AddLine("SkillSheet                                                   " .. version)
+            tooltip:AddLine("DMTools                                                   " .. version)
             tooltip:AddLine(" ")
             tooltip:AddLine(L["Open/Close PC panel button"])
 			tooltip:AddLine(L["Open/Close NPC panel button"])
+			tooltip:AddLine(L["More with /DMTools"])
         end,
     })
     local minimapIcon = LibStub("LibDBIcon-1.0")
-    minimapIcon:Register('SkillSheetMinimapIcon', minimapButton, miniMapDb) --last arg is usually a table in your saved variables so it remembers the positon
+    minimapIcon:Register('DMToolsMinimapIcon', minimapButton, miniMapDb) --last arg is usually a table in your saved variables so it remembers the positon
 end
 
 -----------------------
 -- Variables mémoire --
 -----------------------
-SkillSheetEditIsOpened = false
+DMToolsEditIsOpened = false
 local lastSkillName = ""
 local lastDiceRoll = ""
 local lastDiceValue = ""
@@ -88,42 +89,38 @@ local lastCostValue = ""
 local lastHealthValue = ""
 local lastRessourceValue = ""
 local nameColors = {}
-local outputChannel = "SKILLSHEET"
+local outputChannel = "DMTOOLS"
 local orderedDescription = {}
 local descriptionDetails = {}
-skillSheetMarkerNames = {}
-skillSheetMarkerPowers = {}
-skillSheetMarkerHealth = {}
-skillSheetMarkerDescription = {}
-skillSheetMarkerIcon = {}
-SkillSheetSkillName = {}
-SkillSheetDiceValue = {}
-SkillSheetCostValue = {}
-SkillSheetRollButton = {}
-SkillSheetNewMySkills = {}
-SkillSheetMarkerTransparent = false
+DMToolsMarkerNames = {}
+DMToolsMarkerPowers = {}
+DMToolsMarkerHealth = {}
+DMToolsMarkerDescription = {}
+DMToolsMarkerIcon = {}
+DMToolsSkillName = {}
+DMToolsDiceValue = {}
+DMToolsCostValue = {}
+DMToolsRollButton = {}
+DMToolsNewMySkills = {}
+DMToolsMarkerTransparent = false
+DMToolsPanelPosition = DMToolsPanelPosition or {}
 
-function SkillSheetAnnouncement()
+------------------------------
+--   CHARGEMENT FENETRES    --
+------------------------------
+local f = CreateFrame("Frame")
+f:RegisterEvent("PLAYER_LOGIN")
+f:SetScript("OnEvent", function()
+	for nom, position in pairs(DMToolsPanelPosition) do
+		local fenetre = _G[nom]
+		if fenetre then
+			fenetre:ClearAllPoints()
+			fenetre:SetPoint(position.point, position.x, position.y)
+		end
+	end
+end)
 
-	-- Création de la fenêtre
-	local announcementFrame = CreateFrame("Frame", "SkillSheetAnnouncement", UIParent, "BasicFrameTemplateWithInset")
 
-	-- Positionnement de la fenêtre
-	announcementFrame:SetPoint("CENTER") -- Changez ceci pour modifier la position de la fenêtre
-	announcementFrame:SetSize(450, 440) -- Changez ceci pour modifier la taille de la fenêtre
-
-	-- Ajout du texte
-	local text = announcementFrame:CreateFontString(nil, "OVERLAY")
-	text:SetFontObject("GameFontHighlight")
-	text:SetWidth(announcementFrame:GetWidth()-20) -- Définit la largeur pour le retour à la ligne
-	text:SetJustifyH("LEFT") -- Justifie le texte à gauche
-	text:SetPoint("TOPLEFT", announcementFrame, "TOPLEFT", 10, -30) -- Positionne le texte en haut à gauche
-	text:SetText(L["Announcement"]) -- Utilisez votre variable ici
-
-	-- Affichage de la fenêtre
-	announcementFrame:Show()
-
-end
 
 ----------------------------
 --   MESSAGE D'ACCUEIL    --
@@ -131,8 +128,7 @@ end
 local f = CreateFrame("Frame")
 f:RegisterEvent("PLAYER_LOGIN")
 f:SetScript("OnEvent", function()
-    print("|cFFdaa520SkillSheet " .. version .. L["SkillSheet is loaded"])
-	SkillSheetAnnouncement()
+    print("|cFFdaa520DMTools " .. version .. L["DMTools is loaded"])
 end)
 
 --------------------------------------------
@@ -169,6 +165,8 @@ f:SetScript("OnEvent", function(self, event)
 		ressourceValue = "10/10"
 	end
 
+
+
 	------------------------
 	-- RETROCOMPATIBILITE --
 	------------------------
@@ -178,7 +176,9 @@ f:SetScript("OnEvent", function(self, event)
 			MySkills[i].isCategory = false
 		end
 	end
-	
+
+		
+
 
 	--------------------------
 	-- INTERFACE PRINCIPALE --
@@ -186,25 +186,34 @@ f:SetScript("OnEvent", function(self, event)
 
 	-- Création du cadre
 	local SkillFrame = CreateFrame("Frame", "SkillFrame", UIParent, "ButtonFrameTemplate")
-	SkillFrame:SetTitle(L["SkillSheet Character and GM"])
+	SkillFrame:SetTitle(L["DMTools Character and GM"])
 	SkillFrame:SetPortraitToAsset("Interface\\ICONS\\inv_inscription_runescrolloffortitude_yellow")
 	SkillFrame:SetSize(460, 600) -- Largeur, Hauteur
 	SkillFrame:SetPoint("LEFT", 100, 60) -- Position sur l'écran
 	SkillFrame:EnableMouse(true)
 	SkillFrame:SetMovable(true)
 	SkillFrame:RegisterForDrag("LeftButton")
-	SkillFrame:SetScript("OnDragStart", SkillFrame.StartMoving)
-	SkillFrame:SetScript("OnDragStop", SkillFrame.StopMovingOrSizing)
+	--SkillFrame:SetScript("OnDragStart", SkillFrame.StartMoving)
+	--SkillFrame:SetScript("OnDragStop", SkillFrame.StopMovingOrSizing)
 	SkillFrame:SetFrameStrata("BACKGROUND")
 	SkillFrame.Inset:Hide()
 	SkillFrame:Hide() -- A réactiver en PROD
+	function SkillFrame:OnDragStop()
+		self:StopMovingOrSizing()
+		-- Enregistrer la nouvelle position dans la table
+		local point, _, _, x, y = self:GetPoint()
+		DMToolsPanelPosition[self:GetName()] = {point = point, x = x, y = y}
+	end
+	SkillFrame:SetScript("OnDragStart", SkillFrame.StartMoving)
+	SkillFrame:SetScript("OnDragStop", SkillFrame.OnDragStop)
+	
 
 	-- Création du menu déroulant d'output
 	local dropDownOutput = CreateFrame("Frame", "MyDropDownMenu", SkillFrame, "UIDropDownMenuTemplate")
 	dropDownOutput:SetPoint("TOPLEFT", SkillFrame, "TOPLEFT", 315, -83)
 	-- Liste des options du menu déroulant
 	local items = {
-		"SkillSheet",
+		"DMTools",
 		"Raid",
 		"Party",
 		"Emote",
@@ -491,8 +500,8 @@ f:SetScript("OnEvent", function(self, event)
 				if status then
 					playerName =  AddOn_TotalRP3.Player.GetCurrentUser():GetFirstName()
 				end
-			C_ChatInfo.SendAddonMessage("SkillSheet", "TURN@" .. playerName .. "@" .. "@" .. "@" .. "@" .. "@" .. "@" .. "@", channel)
-			if outputChannel ~= "SKILLSHEET" and outputChannel ~= "RAID" and outputChannel ~= "SELF" then
+			C_ChatInfo.SendAddonMessage("DMTools", "TURN@" .. playerName .. "@" .. "@" .. "@" .. "@" .. "@" .. "@" .. "@", channel)
+			if outputChannel ~= "DMTOOLS" and outputChannel ~= "RAID" and outputChannel ~= "SELF" then
 				SendChatMessage(L["has started a new turn"], outputChannel )
 			elseif outputChannel == "RAID" then
 				SendChatMessage(playerName .. L["has started a new turn"], "RAID_WARNING")
@@ -547,8 +556,8 @@ f:SetScript("OnEvent", function(self, event)
 				if status then
 					playerName =  AddOn_TotalRP3.Player.GetCurrentUser():GetFirstName()
 				end
-			C_ChatInfo.SendAddonMessage("SkillSheet", "ENEMY@" .. playerName .. "@" .. "@" .. "@" .. "@" .. "@" .. "@" .. "@", channel)
-			if outputChannel ~= "SKILLSHEET" and outputChannel ~= "RAID" and outputChannel ~= "SELF" then
+			C_ChatInfo.SendAddonMessage("DMTools", "ENEMY@" .. playerName .. "@" .. "@" .. "@" .. "@" .. "@" .. "@" .. "@", channel)
+			if outputChannel ~= "DMTOOLS" and outputChannel ~= "RAID" and outputChannel ~= "SELF" then
 				SendChatMessage(L["has started a new enemy turn"], outputChannel )
 			elseif outputChannel == "RAID" then
 				SendChatMessage(playerName .. L["has started a new enemy turn"], "RAID_WARNING")
@@ -603,8 +612,8 @@ f:SetScript("OnEvent", function(self, event)
 				if status then
 					playerName =  AddOn_TotalRP3.Player.GetCurrentUser():GetFirstName()
 				end
-			C_ChatInfo.SendAddonMessage("SkillSheet", "FREE@" .. playerName .. "@" .. "@" .. "@" .. "@" .. "@" .. "@" .. "@", channel)
-			if outputChannel ~= "SKILLSHEET" and outputChannel ~= "RAID" and outputChannel ~= "SELF" then
+			C_ChatInfo.SendAddonMessage("DMTools", "FREE@" .. playerName .. "@" .. "@" .. "@" .. "@" .. "@" .. "@" .. "@", channel)
+			if outputChannel ~= "DMTOOLS" and outputChannel ~= "RAID" and outputChannel ~= "SELF" then
 				SendChatMessage(L["has started a new free turn"], outputChannel )
 			elseif outputChannel == "RAID" then
 				SendChatMessage(playerName .. L["has started a new free turn"], "RAID_WARNING")
@@ -652,26 +661,26 @@ f:SetScript("OnEvent", function(self, event)
 			skillName:SetText("|cFFFFFFFF" .. MySkills[i].name)
 			skillName:SetFontObject("GameFontNormal")
 		end
-		SkillSheetSkillName[i] = skillName
+		DMToolsSkillName[i] = skillName
 			
 		-- Valeur du dé
 		local diceValue = SkillFramePage1:CreateFontString(nil, "OVERLAY")
 		diceValue:SetFontObject("GameFontNormal")
 		diceValue:SetPoint("TOPLEFT", 210, -30 * i - 120)
 		diceValue:SetText("|cFFFFFFFF" .. MySkills[i].roll)
-		SkillSheetDiceValue[i] = diceValue
+		DMToolsDiceValue[i] = diceValue
 		
 		-- Valeur du coût
 		local costValue = SkillFramePage1:CreateFontString(nil, "OVERLAY")
 		costValue:SetFontObject("GameFontNormal")
 		costValue:SetPoint("TOPLEFT", 310, -30 * i - 120)
 		costValue:SetText("|cFFFFFFFF" .. MySkills[i].cost)
-		SkillSheetCostValue[i] = costValue
+		DMToolsCostValue[i] = costValue
 	
 		-- Bouton de roll
 		local rollButton = CreateFrame("Button", nil, SkillFramePage1, "GameMenuButtonTemplate")
 		local playerName = UnitName("player") -- Obtient le nom du joueur
-		SkillSheetRollButton[i] = rollButton
+		DMToolsRollButton[i] = rollButton
 		rollButton:SetPoint("TOPLEFT", 380, -30 * i - 115)
 		rollButton:SetSize(50, 25)
 		rollButton:SetText(L["Roll"])
@@ -690,14 +699,14 @@ f:SetScript("OnEvent", function(self, event)
 			if IsInRaid() then
 				channel = "RAID"
 			end
-			C_ChatInfo.SendAddonMessage("SkillSheet", "ROLL@" .. playerName .. "@" .. MySkills[i].name .. "@" .. lastDiceRoll .. "@" .. MySkills[i].roll .. "@" .. lastCostRoll .. "@" .. MySkills[i].cost .. "@" .. healthValue .. "@" .. ressourceValue .. "@" .. i, channel)
+			C_ChatInfo.SendAddonMessage("DMTools", "ROLL@" .. playerName .. "@" .. MySkills[i].name .. "@" .. lastDiceRoll .. "@" .. MySkills[i].roll .. "@" .. lastCostRoll .. "@" .. MySkills[i].cost .. "@" .. healthValue .. "@" .. ressourceValue .. "@" .. i, channel)
 			-- découpage de la description en plusieurs parties
 			local length = string.len(MySkills[i].description)
 			local start = 1
 			local partID = 1
 			while start < length do
 				local subStr = string.sub(MySkills[i].description, start, start + 150)
-				C_ChatInfo.SendAddonMessage("SkillSheet", "DESC@" .. playerName .. "@" .. i .. "@" .. partID .. "@" ..  subStr, channel)
+				C_ChatInfo.SendAddonMessage("DMTools", "DESC@" .. playerName .. "@" .. i .. "@" .. partID .. "@" ..  subStr, channel)
 				start = start +151
 				partID = partID +1
 			end
@@ -723,9 +732,9 @@ f:SetScript("OnEvent", function(self, event)
 				if IsInRaid() then
 					channel = "RAID"
 				end
-				C_ChatInfo.SendAddonMessage("SkillSheet", "EMOTE@" .. playerName .. " " .. emoteChatMessage .. "@" .. "@" .. "@" .. "@" .. "@", channel)
+				C_ChatInfo.SendAddonMessage("DMTools", "EMOTE@" .. playerName .. " " .. emoteChatMessage .. "@" .. "@" .. "@" .. "@" .. "@", channel)
 			end
-			if outputChannel ~= "SKILLSHEET" and outputChannel ~= "SELF" then
+			if outputChannel ~= "DMTOOLS" and outputChannel ~= "SELF" then
 				SendChatMessage(emoteChatMessage, outputChannel )
 			elseif outputChannel == "SELF" then
 				print(playerName .. " " .. emoteChatMessage)
@@ -741,8 +750,8 @@ f:SetScript("OnEvent", function(self, event)
 		editButton:SetSize(25, 25)
 		editButton:SetText("?")
 		editButton:SetScript("OnClick", function()
-			if SkillSheetEditIsOpened == false then
-				SkillSheetEditIsOpened = true
+			if DMToolsEditIsOpened == false then
+				DMToolsEditIsOpened = true
 				-- Création de la fenêtre d'édition de compétence
 				local editFrame = CreateFrame("Frame", "editFrame", UIParent, "ButtonFrameTemplate")
 				editFrame:SetFrameStrata("HIGH")
@@ -758,7 +767,7 @@ f:SetScript("OnEvent", function(self, event)
 				editFrame:SetScript("OnDragStop", editFrame.StopMovingOrSizing)
 				editFrame.Inset:Hide()
 				editFrame:SetScript("OnHide", function(self)
-					SkillSheetEditIsOpened = false  -- Change la valeur de la variable lorsque la fenêtre est fermée
+					DMToolsEditIsOpened = false  -- Change la valeur de la variable lorsque la fenêtre est fermée
 				end)
 				-- Zone de texte pour le nom de la compétence
 				local editSkillName = editFrame:CreateFontString(nil, "OVERLAY")
@@ -909,26 +918,26 @@ for i = 16, 30 do
 		skillName:SetText("|cFFFFFFFF" .. MySkills[i].name)
 		skillName:SetFontObject("GameFontNormal")
 	end
-	SkillSheetSkillName[i] = skillName
+	DMToolsSkillName[i] = skillName
 
 	-- Valeur du dé
 	local diceValue = SkillFramePage2:CreateFontString(nil, "OVERLAY")
 	diceValue:SetFontObject("GameFontNormal")
 	diceValue:SetPoint("TOPLEFT", 210, -30 * j - 120)
 	diceValue:SetText("|cFFFFFFFF" .. MySkills[i].roll)
-	SkillSheetDiceValue[i] = diceValue
+	DMToolsDiceValue[i] = diceValue
 	
 	-- Valeur du coût
 	local costValue = SkillFramePage2:CreateFontString(nil, "OVERLAY")
 	costValue:SetFontObject("GameFontNormal")
 	costValue:SetPoint("TOPLEFT", 310, -30 * j - 120)
 	costValue:SetText("|cFFFFFFFF" .. MySkills[i].cost)
-	SkillSheetCostValue[i] = costValue
+	DMToolsCostValue[i] = costValue
 
 	-- Bouton de roll
 	local rollButton = CreateFrame("Button", nil, SkillFramePage2, "GameMenuButtonTemplate")
 	local playerName = UnitName("player") -- Obtient le nom du joueur
-	SkillSheetRollButton[i] = rollButton
+	DMToolsRollButton[i] = rollButton
 	rollButton:SetPoint("TOPLEFT", 380, -30 * j - 115)
 	rollButton:SetSize(50, 25)
 	rollButton:SetText("Roll")
@@ -947,14 +956,14 @@ for i = 16, 30 do
 		if IsInRaid() then
 			channel = "RAID"
 		end
-		C_ChatInfo.SendAddonMessage("SkillSheet", "ROLL@" .. playerName .. "@" .. MySkills[i].name .. "@" .. lastDiceRoll .. "@" .. MySkills[i].roll .. "@" .. lastCostRoll .. "@" .. MySkills[i].cost .. "@" .. healthValue .. "@" .. ressourceValue .. "@" .. i, channel)
+		C_ChatInfo.SendAddonMessage("DMTools", "ROLL@" .. playerName .. "@" .. MySkills[i].name .. "@" .. lastDiceRoll .. "@" .. MySkills[i].roll .. "@" .. lastCostRoll .. "@" .. MySkills[i].cost .. "@" .. healthValue .. "@" .. ressourceValue .. "@" .. i, channel)
 			-- découpage de la description en plusieurs parties
 			local length = string.len(MySkills[i].description)
 			local start = 1
 			local partID = 1
 			while start < length do
 				local subStr = string.sub(MySkills[i].description, start, start + 150)
-				C_ChatInfo.SendAddonMessage("SkillSheet", "DESC@" .. playerName .. "@" .. i .. "@" .. partID .. "@" ..  subStr, channel)
+				C_ChatInfo.SendAddonMessage("DMTools", "DESC@" .. playerName .. "@" .. i .. "@" .. partID .. "@" ..  subStr, channel)
 				start = start +151
 				partID = partID +1
 			end
@@ -980,9 +989,9 @@ for i = 16, 30 do
 			if IsInRaid() then
 				channel = "RAID"
 			end
-			C_ChatInfo.SendAddonMessage("SkillSheet", "EMOTE@" .. playerName .. " " .. emoteChatMessage .. "@" .. "@" .. "@" .. "@" .. "@", channel)
+			C_ChatInfo.SendAddonMessage("DMTools", "EMOTE@" .. playerName .. " " .. emoteChatMessage .. "@" .. "@" .. "@" .. "@" .. "@", channel)
 		end
-		if outputChannel ~= "SKILLSHEET" and outputChannel ~= "SELF" then
+		if outputChannel ~= "DMTOOLS" and outputChannel ~= "SELF" then
 			SendChatMessage(emoteChatMessage, outputChannel )
 		elseif outputChannel == "SELF" then
 			print(playerName .. " " .. emoteChatMessage)
@@ -993,14 +1002,14 @@ for i = 16, 30 do
 	end
 	
 	-- Bouton d'édition
-	SkillSheetEditIsOpened = false
+	DMToolsEditIsOpened = false
 	local editButton = CreateFrame("Button", nil, SkillFramePage2, "GameMenuButtonTemplate")
 	editButton:SetPoint("TOPLEFT", 432, -30 * j - 115)
 	editButton:SetSize(25, 25)
 	editButton:SetText("?")
 	editButton:SetScript("OnClick", function()
-		if SkillSheetEditIsOpened == false then
-			SkillSheetEditIsOpened = true
+		if DMToolsEditIsOpened == false then
+			DMToolsEditIsOpened = true
 			-- Création de la fenêtre d'édition de compétence
 			local editFrame = CreateFrame("Frame", "editFrame", UIParent, "ButtonFrameTemplate")
 			editFrame:SetFrameStrata("HIGH")
@@ -1016,7 +1025,7 @@ for i = 16, 30 do
 			editFrame:SetScript("OnDragStop", editFrame.StopMovingOrSizing)
 			editFrame.Inset:Hide()
 			editFrame:SetScript("OnHide", function(self)
-				SkillSheetEditIsOpened = false  -- Change la valeur de la variable lorsque la fenêtre est fermée
+				DMToolsEditIsOpened = false  -- Change la valeur de la variable lorsque la fenêtre est fermée
 			end)
 			-- Zone de texte pour le nom de la compétence
 			local editSkillName = editFrame:CreateFontString(nil, "OVERLAY")
@@ -1167,26 +1176,26 @@ for i = 31, 45 do
 		skillName:SetText("|cFFFFFFFF" .. MySkills[i].name)
 		skillName:SetFontObject("GameFontNormal")
 	end
-	SkillSheetSkillName[i] = skillName
+	DMToolsSkillName[i] = skillName
 
 	-- Valeur du dé
 	local diceValue = SkillFramePage3:CreateFontString(nil, "OVERLAY")
 	diceValue:SetFontObject("GameFontNormal")
 	diceValue:SetPoint("TOPLEFT", 210, -30 * j - 120)
 	diceValue:SetText("|cFFFFFFFF" .. MySkills[i].roll)
-	SkillSheetDiceValue[i] = diceValue
+	DMToolsDiceValue[i] = diceValue
 	
 	-- Valeur du coût
 	local costValue = SkillFramePage3:CreateFontString(nil, "OVERLAY")
 	costValue:SetFontObject("GameFontNormal")
 	costValue:SetPoint("TOPLEFT", 310, -30 * j - 120)
 	costValue:SetText("|cFFFFFFFF" .. MySkills[i].cost)
-	SkillSheetCostValue[i] = costValue
+	DMToolsCostValue[i] = costValue
 
 	-- Bouton de roll
 	local rollButton = CreateFrame("Button", nil, SkillFramePage3, "GameMenuButtonTemplate")
 	local playerName = UnitName("player") -- Obtient le nom du joueur
-	SkillSheetRollButton[i] = rollButton
+	DMToolsRollButton[i] = rollButton
 	rollButton:SetPoint("TOPLEFT", 380, -30 * j - 115)
 	rollButton:SetSize(50, 25)
 	rollButton:SetText("Roll")
@@ -1205,14 +1214,14 @@ for i = 31, 45 do
 		if IsInRaid() then
 			channel = "RAID"
 		end
-		C_ChatInfo.SendAddonMessage("SkillSheet", "ROLL@" .. playerName .. "@" .. MySkills[i].name .. "@" .. lastDiceRoll .. "@" .. MySkills[i].roll .. "@" .. lastCostRoll .. "@" .. MySkills[i].cost .. "@" .. healthValue .. "@" .. ressourceValue .. "@" .. i, channel)
+		C_ChatInfo.SendAddonMessage("DMTools", "ROLL@" .. playerName .. "@" .. MySkills[i].name .. "@" .. lastDiceRoll .. "@" .. MySkills[i].roll .. "@" .. lastCostRoll .. "@" .. MySkills[i].cost .. "@" .. healthValue .. "@" .. ressourceValue .. "@" .. i, channel)
 			-- découpage de la description en plusieurs parties
 			local length = string.len(MySkills[i].description)
 			local start = 1
 			local partID = 1
 			while start < length do
 				local subStr = string.sub(MySkills[i].description, start, start + 150)
-				C_ChatInfo.SendAddonMessage("SkillSheet", "DESC@" .. playerName .. "@" .. i .. "@" .. partID .. "@" ..  subStr, channel)
+				C_ChatInfo.SendAddonMessage("DMTools", "DESC@" .. playerName .. "@" .. i .. "@" .. partID .. "@" ..  subStr, channel)
 				start = start +151
 				partID = partID +1
 			end
@@ -1238,9 +1247,9 @@ for i = 31, 45 do
 			if IsInRaid() then
 				channel = "RAID"
 			end
-			C_ChatInfo.SendAddonMessage("SkillSheet", "EMOTE@" .. playerName .. " " .. emoteChatMessage .. "@" .. "@" .. "@" .. "@" .. "@", channel)
+			C_ChatInfo.SendAddonMessage("DMTools", "EMOTE@" .. playerName .. " " .. emoteChatMessage .. "@" .. "@" .. "@" .. "@" .. "@", channel)
 		end
-		if outputChannel ~= "SKILLSHEET" and outputChannel ~= "SELF" then
+		if outputChannel ~= "DMTOOLS" and outputChannel ~= "SELF" then
 			SendChatMessage(emoteChatMessage, outputChannel )
 		elseif outputChannel == "SELF" then
 			print(playerName .. " " .. emoteChatMessage)
@@ -1251,14 +1260,14 @@ for i = 31, 45 do
 	end
 	
 	-- Bouton d'édition
-	SkillSheetEditIsOpened = false
+	DMToolsEditIsOpened = false
 	local editButton = CreateFrame("Button", nil, SkillFramePage3, "GameMenuButtonTemplate")
 	editButton:SetPoint("TOPLEFT", 432, -30 * j - 115)
 	editButton:SetSize(25, 25)
 	editButton:SetText("?")
 	editButton:SetScript("OnClick", function()
-		if SkillSheetEditIsOpened == false then
-			SkillSheetEditIsOpened = true
+		if DMToolsEditIsOpened == false then
+			DMToolsEditIsOpened = true
 			-- Création de la fenêtre d'édition de compétence
 			local editFrame = CreateFrame("Frame", "editFrame", UIParent, "ButtonFrameTemplate")
 			editFrame:SetFrameStrata("HIGH")
@@ -1274,7 +1283,7 @@ for i = 31, 45 do
 			editFrame:SetScript("OnDragStop", editFrame.StopMovingOrSizing)
 			editFrame.Inset:Hide()
 			editFrame:SetScript("OnHide", function(self)
-				SkillSheetEditIsOpened = false  -- Change la valeur de la variable lorsque la fenêtre est fermée
+				DMToolsEditIsOpened = false  -- Change la valeur de la variable lorsque la fenêtre est fermée
 			end)
 			-- Zone de texte pour le nom de la compétence
 			local editSkillName = editFrame:CreateFontString(nil, "OVERLAY")
@@ -1533,7 +1542,7 @@ end
 		if IsInRaid() then
 			channel = "RAID"
 		end
-		C_ChatInfo.SendAddonMessage("SkillSheet", "SYNC@" .. playerName .. "@" .. lastSkillName .. "@" .. lastDiceRoll .. "@" .. lastDiceValue .. "@" .. lastCostRoll .. "@" .. lastCostValue .. "@" .. healthValue .. "@" .. ressourceValue, channel)
+		C_ChatInfo.SendAddonMessage("DMTools", "SYNC@" .. playerName .. "@" .. lastSkillName .. "@" .. lastDiceRoll .. "@" .. lastDiceValue .. "@" .. lastCostRoll .. "@" .. lastCostValue .. "@" .. healthValue .. "@" .. ressourceValue, channel)
 		end)
 
 	-- Cadre des points de ressource
@@ -1578,7 +1587,7 @@ end
 			if IsInRaid() then
 				channel = "RAID"
 			end
-			C_ChatInfo.SendAddonMessage("SkillSheet", "SYNC@" .. playerName .. "@" .. lastSkillName .. "@" .. lastDiceRoll .. "@" .. lastDiceValue .. "@" .. lastCostRoll .. "@" .. lastCostValue .. "@" .. healthValue .. "@" .. ressourceValue, channel)
+			C_ChatInfo.SendAddonMessage("DMTools", "SYNC@" .. playerName .. "@" .. lastSkillName .. "@" .. lastDiceRoll .. "@" .. lastDiceValue .. "@" .. lastCostRoll .. "@" .. lastCostValue .. "@" .. healthValue .. "@" .. ressourceValue, channel)
 	end)
 
 
@@ -1614,7 +1623,7 @@ end
 				playerName =  AddOn_TotalRP3.Player.GetCurrentUser():GetFirstName()
 			end
 			if not IsInInstance() then
-				C_ChatInfo.SendAddonMessage("SkillSheet", "HELLO@" .. playerName .. "@" .. "@" .. "@" .. "@" .. "@" .. "@" .. healthValue .. "@" .. ressourceValue, channel)
+				C_ChatInfo.SendAddonMessage("DMTools", "HELLO@" .. playerName .. "@" .. "@" .. "@" .. "@" .. "@" .. "@" .. healthValue .. "@" .. ressourceValue, channel)
 			end
 	end
 
@@ -1630,7 +1639,7 @@ end
 			player.costValue = ""
 		end
 		PlaySound(8959)
-		if outputChannel == "SKILLSHEET" then
+		if outputChannel == "DMTOOLS" then
 			print("|cffffff00" .. name .. L["has started a new turn"])
 		end
 		newTurnButton:Disable()
@@ -1646,7 +1655,7 @@ end
 			nameColors[name] = "|cffffff00" -- Jaune
 		end
 		PlaySound(8959)
-		if outputChannel == "SKILLSHEET" then
+		if outputChannel == "DMTOOLS" then
 			print("|cffffff00" .. name .. L["has started a new enemy turn"])
 		end
 		newTurnButton:Enable()
@@ -1662,7 +1671,7 @@ end
 			nameColors[name] = "|cFF52BE80" -- Vert
 		end
 		PlaySound(8959)
-		if outputChannel == "SKILLSHEET" then
+		if outputChannel == "DMTOOLS" then
 			print("|cffffff00" .. name .. L["has started a new free turn"])
 		end
 		newTurnButton:Enable()
@@ -1678,27 +1687,27 @@ end
 	local function storeMarkers(player, id, markerName, markerPower, markerHealth, markerDescription, markerHidden)
 		id = tonumber(id)
 		if player ~= UnitName("player") and markerHidden == "false" then
-			skillSheetMarkerNames[id]:SetText("|cFFFFFFFF" .. markerName)
+			DMToolsMarkerNames[id]:SetText("|cFFFFFFFF" .. markerName)
 			markers[id].name = markerName
-			skillSheetMarkerPowers[id]:SetText("|cFFFFFFFF" .. markerPower)
+			DMToolsMarkerPowers[id]:SetText("|cFFFFFFFF" .. markerPower)
 			markers[id].power = markerPower
-			skillSheetMarkerHealth[id]:SetText("|cFFFFFFFF" .. markerHealth)
+			DMToolsMarkerHealth[id]:SetText("|cFFFFFFFF" .. markerHealth)
 			markers[id].health = markerHealth
 			markers[id].description = markerDescription
 			markers[id].hidden = false
-			skillSheetMarkerIcon[id]:Show()
+			DMToolsMarkerIcon[id]:Show()
 			--print(markers[id].description)
 		elseif player ~= UnitName("player") and markerHidden == "true" then
-			skillSheetMarkerNames[id]:SetText("")
+			DMToolsMarkerNames[id]:SetText("")
 			markers[id].name = ""
-			skillSheetMarkerPowers[id]:SetText("")
+			DMToolsMarkerPowers[id]:SetText("")
 			markers[id].power = ""
-			skillSheetMarkerHealth[id]:SetText("")
+			DMToolsMarkerHealth[id]:SetText("")
 			markers[id].health = ""
 			markers[id].description = ""
 			markers[id].hidden = true
-				if SkillSheetMarkerTransparent == true then
-					skillSheetMarkerIcon[id]:Hide()
+				if DMToolsMarkerTransparent == true then
+					DMToolsMarkerIcon[id]:Hide()
 				end
 		end
     end
@@ -1718,28 +1727,28 @@ end
 	------------------------
 
 	-- Commande pour afficher la fenêtre
-	SLASH_SKILLSHEET1 = "/skillsheet"
-	SlashCmdList["SKILLSHEET"] = function(msg)
+	SLASH_DMTools1 = "/DMTools"
+	SlashCmdList["DMTools"] = function(msg)
 		if msg == "" then
 			-- Aucun argument fourni, afficher le texte d'aide
 			print(L["Command Usage"])
-			--print("/skillsheet character - Explication de la commande character")
-			--print("/skillsheet markers - Explication de la commande markers")
-			print(L["SkillSheet Export"])
-			print(L["SkillSheet Import"])
-			print(L["Skillsheet Reset"])
+			--print("/DMTools character - Explication de la commande character")
+			--print("/DMTools markers - Explication de la commande markers")
+			print(L["DMTools Export"])
+			print(L["DMTools Import"])
+			print(L["DMTools Reset"])
 		elseif string.lower(msg) == "character" then
 			-- Gérer la commande character
 		elseif string.lower(msg) == "markers" then
 			-- Gérer la commande markers
 		elseif string.lower(msg) == "export" then
-			SkillSheetExportData(MySkills)
+			DMToolsExportData(MySkills)
 		elseif string.lower(msg) == "import" then
-			SkillSheetImportData(MySkills)
+			DMToolsImportData(MySkills)
 		elseif string.lower(msg) == "reset" then
-			SkillSheetReset(MySkills)
+			DMToolsReset(MySkills)
 		else
-			print("Commande inconnue. Tapez /skillsheet pour l'aide.")
+			print("Commande inconnue. Tapez /DMTools pour l'aide.")
 		end
 	end
 
@@ -1754,7 +1763,7 @@ end
 	eventFrame:RegisterEvent("CHAT_MSG_ADDON")
 
 	eventFrame:SetScript("OnEvent", function(self, event, prefix, message, channel, sender)
-		if event == "CHAT_MSG_ADDON" and prefix == "SkillSheet" then
+		if event == "CHAT_MSG_ADDON" and prefix == "DMTools" then
 			local action, name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue, skillID = strsplit("@", message)
 			local action, player, id, markerName, markerPower, markerHealth, markerDescription, markerHidden, markerDump = strsplit("@", message)
 			local action, name, descSkillID, partID, descriptionPart, descDump = strsplit("@", message)
@@ -1766,7 +1775,7 @@ end
 				--print(name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue, skillID)
 			elseif action == "SYNC" then
 				onSyncMessage(name, skillName, diceRoll, diceValue, costRoll, costValue, healthValue, ressourceValue)
-			elseif action == "EMOTE" and outputChannel == "SKILLSHEET" then
+			elseif action == "EMOTE" and outputChannel == "DMTOOLS" then
 				print("|cffffff00" .. name) -- affiche la notification du jet
 			elseif action == "TURN" then
 				newTurn(name)
