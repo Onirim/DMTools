@@ -1,3 +1,5 @@
+### Version 2.4.3
+- Updating for World of Warcraft 10.2.6
 ### Version 2.4.2
 - Fixed some typos and alignments in tables for english language
 ### Version 2.4.1
