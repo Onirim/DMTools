@@ -1,5 +1,5 @@
-## Interface: 100205
-## Version: 2.4.2
+## Interface: 100206
+## Version: 2.4.3
 ## Title: DMTools
 ## Notes: Character Sheet, dice rolling, turns and markers management for roleplayers who like going on adventures!
 ## Author: Onirim
