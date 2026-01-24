@@ -1,5 +1,5 @@
-## Interface: 110002
-## Version: 2.5.1
+## Interface: 120000
+## Version: 2.5.2
 ## Title: DMTools
 ## Notes: Character Sheet, dice rolling, turns and markers management for roleplayers who like going on adventures!
 ## Author: Onirim
@@ -11,3 +11,4 @@ Localization.lua
 Core.lua
 Markers.lua
 Utils.lua
+
